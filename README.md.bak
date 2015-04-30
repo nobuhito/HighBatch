@@ -49,3 +49,15 @@ RESTによりタスクの実行や結果の報告が行われる。
 - Bootstrap
 - HighlightJs
 - TreeView
+
+## 以下メモ
+
+Cronの起動はArranger内で
+
+1. 無限ループ
+  1. Specの読み込み
+    1. GoRoutineの起動
+      1. Cronの初期化
+      1. Cronの開始
+      1. 60秒Sleep
+      1. Cronの終了

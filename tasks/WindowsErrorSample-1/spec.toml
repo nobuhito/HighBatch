@@ -1,0 +1,4 @@
+description = "Windows batch execute error sample."
+cmd = "batch.bat"
+machine = ["localhost"]
+schedule = "0 0-59/3 * * * *"
