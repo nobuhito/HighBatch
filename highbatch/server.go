@@ -111,7 +111,7 @@ func dataHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 		f.task = c.URLParams["task"]
 	}
 	if c.URLParams["conpletedatetime"] != "" {
-		f.completed = c.URLParams["completed"]
+		f.start = c.URLParams["completed"]
 	}
 
 	j, _ := json.Marshal(get(f))

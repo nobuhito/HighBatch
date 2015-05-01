@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"math/rand"
 	"net/http"
@@ -16,7 +15,6 @@ import (
 )
 
 func write(wo Spec) {
-	wo.Completed = fmt.Sprint(time.Now().Format("20060102150405"), rand.Intn(9))
 	Ld("in write")
 	rand.Seed(time.Now().UnixNano())
 
@@ -159,7 +157,7 @@ func sendMaster(wo Spec) error {
 func writeDB(wo Spec) error {
 	Ld("in writeDB")
 
-	key := wo.Started + "_" + wo.Hostname + "_" + wo.Key
+	key := wo.Id
 	value, err := json.Marshal(wo)
 
 	if err != nil {

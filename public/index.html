@@ -27,7 +27,7 @@
 </head>
 <body>
     <!-- Place your content here -->
-    <nav class="navbar navbar-default navbar--top">
+    <nav class="navbar navbar-default navbar-fixed-top">
         <div class="container">
             <a class="navbar-brand" href="#">
                 HighBatch
@@ -69,18 +69,18 @@
          var title = $("<a>").html(titleStr)
                              .addClass("collapsed")
                              .attr({
-                                 "href": "#c-" + d["completed"],
+                                 "href": "#c-" + d["id"],
                                  "data-toggle": "collapse",
                                  "data-parent": "#accordion",
                                  "aria-expanded": "false",
-                                 "aria-controls": "c-" + d["completed"]
+                                 "aria-controls": "c-" + d["id"]
                              });
          var panelTitle = $("<h4>").addClass("panel-title")
                                    .append(title);
          var panelHeading = $("<div>").addClass("panel-heading")
                                       .attr({
                                           "role": "tab",
-                                          "id": "p-" + d["completed"]
+                                          "id": "p-" + d["id"]
                                       })
                                       .append(panelTitle);
          return panelHeading;
@@ -93,7 +93,7 @@
                                     "role": "tablist"
                                 });
          var tabContent = $("<div>").addClass("tab-content");
-         var idActive = d["completed"] + "output";
+         var idActive = d["id"] + "output";
          var aActive = $("<a>").text("output")
                          .attr({
                              href: "#" + idActive,
@@ -123,7 +123,7 @@
          tabContent.append(tabPaneActive).appendTo(navTabs);
 
          for (i in d["assets"]) {
-             var id = d["completed"] + d["assets"][i].replace(/[^\w\d]/, "");
+             var id = d["id"] + d["assets"][i].replace(/[^\w\d]/, "");
              var a = $("<a>").text(d["assets"][i])
                              .attr({
                                  href: "/source/" + d["name"] + "/" + d["assets"][i],
@@ -252,8 +252,8 @@
          var panelCollapse = $("<div>").addClass("panel-collapse collapse")
                                        .attr({
                                            "role": "tabpanel",
-                                           "aria-labelledby": "p-" + d["completed"],
-                                           "id": "c-" + d["completed"]
+                                           "aria-labelledby": "p-" + d["id"],
+                                           "id": "c-" + d["id"]
                                        })
                                        .append(panelBody);
          return panelCollapse;
@@ -399,7 +399,7 @@
                      var k = d["key"];
                      if (!("error" in items[h][k])) { items[h][k]["error"] = []; }
                      if (d["exitCode"] > 0) {
-                         items[h][k]["error"].push(d["completed"]);
+                         items[h][k]["error"].push(d["id"]);
                      }
                  }
              }
@@ -426,6 +426,19 @@
                  $("#article-wrap").removeClass().addClass("col-sm-8");
              }
          );
+
+         $(function () {
+             $('.panel-group').on('shown.bs.collapse', function (e) {
+                 var offset = $('.panel.panel-default > .panel-collapse.in').offset();
+                 if(offset) {
+                     $('html,body').animate({
+                         scrollTop: $('.panel-collapse.in').siblings('.panel-heading').offset().top - 70
+                     }, 200);
+                 }
+             });
+         });
+
+
      });
     </script>
 </body>

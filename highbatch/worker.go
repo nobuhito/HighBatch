@@ -14,6 +14,7 @@ import (
 	"strings"
 	"syscall"
 	"time"
+	"math/rand"
 )
 
 func StartWorker() {
@@ -86,6 +87,8 @@ func getData(url string) (string, error) {
 func worker(wo Spec) {
 	Ld("in Worker")
 
+	wo.Started = fmt.Sprint(time.Now().Format("20060102150405"), rand.Intn(9))
+
 	cmd := strings.Split(wo.Cmd, " ")
 
 	startTime := time.Now()
@@ -107,8 +110,11 @@ func worker(wo Spec) {
 	duration := time.Now().Sub(startTime)
 	wo.Duration = duration.String()
 	wo.DurationInt = fmt.Sprint(duration.Nanoseconds())
+	wo.Completed = fmt.Sprint(time.Now().Format("20060102150405"), rand.Intn(9))
+
 	Li(fmt.Sprint(wo))
-	write(wo)
+
+	go write(wo)
 }
 
 func executeWinCmd(path string, cmdSlice []string) (exitCode int, output string) {
@@ -130,7 +136,7 @@ func executeWinCmd(path string, cmdSlice []string) (exitCode int, output string)
 			}
 		}
 	}
-	
+
 	ret, _, err = transform.Bytes(japanese.ShiftJIS.NewDecoder(), ret)
 	output = string(ret)
 

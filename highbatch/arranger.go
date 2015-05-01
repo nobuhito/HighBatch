@@ -19,6 +19,7 @@ import (
 )
 
 type Spec struct {
+	Id          string   `json:"id"`
 	Key         string   `json:"key"`
 	Name        string   `json:"name"`
 	Description string   `json:"description"`
@@ -173,6 +174,7 @@ func sendWorker(spec Spec) {
 	for i := range spec.Machine {
 
 		spec.Hostname = spec.Machine[i]
+		spec.Id = spec.Started + "_" + spec.Hostname + "_" + spec.Key
 
 		if err := writeDB(spec); err != nil {
 			Le(err)
@@ -182,7 +184,7 @@ func sendWorker(spec Spec) {
 
 		req, _ := http.NewRequest(
 			"POST",
-			"http://"+spec.Machine[i]+":8081/worker",
+			"http://"+spec.Hostname+":8081/worker",
 			bytes.NewBuffer(m),
 		)
 		req.Header.Set("Content-Type", "application/json; charset=utf-8")

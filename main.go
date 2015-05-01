@@ -9,6 +9,8 @@ import (
 )
 
 func main() {
+
+	highbatch.Initdb()
 	highbatch.LogInit("debug")
 
 	if bootCheck() {							// 設定ファイルの有無

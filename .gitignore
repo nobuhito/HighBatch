@@ -2,6 +2,8 @@ tasks.zip
 log
 temp
 static/file/*
+/config.toml
+/HighBatch.db
 
 /tasks/*
 !/tasks/*Sample*

@@ -1,9 +1,0 @@
-[server]
-name = "Master"
-
-[client]
-tag = ["master"]
-
-[client.master]
-hostname = "highbatch"
-port = "8081"
