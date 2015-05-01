@@ -21,7 +21,6 @@ func main() {
 		fmt.Println(err)
 	}
 
-	highbatch.Initdb()
 	highbatch.LogInit("debug")
 
 	if bootCheck() {							// 設定ファイルの有無
@@ -32,6 +31,10 @@ func main() {
 		highbatch.Ld("load config")
 
 		if highbatch.Conf.Server.Name != "" { // マスターの場合
+
+			// DBの作成
+			highbatch.Initdb()
+			highbatch.Ld("init boltdb")
 
 			// バッチ処理指示エンジンの起動
 			go highbatch.StartArranger()
