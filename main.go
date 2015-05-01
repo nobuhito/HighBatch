@@ -6,9 +6,20 @@ import (
 	"os"
 	"bytes"
 	"io/ioutil"
+	"fmt"
+	"path/filepath"
 )
 
 func main() {
+
+	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+	fmt.Println(dir)
+	if err != nil {
+		fmt.Println(err)
+	}
+	if err := os.Chdir(dir); err != nil {
+		fmt.Println(err)
+	}
 
 	highbatch.Initdb()
 	highbatch.LogInit("debug")
