@@ -16,6 +16,7 @@ import (
 	"strings"
 	"time"
 	"fmt"
+	"errors"
 )
 
 type Spec struct {
@@ -56,7 +57,14 @@ func StartArranger() {
 			Li(fmt.Sprintf("%v", spec))
 			if spec.Schedule != "" {
 				c.AddFunc(spec.Schedule, func() {
-					sendWorker(spec)
+					if spec, err := sendWorker(spec); err != nil {
+						spec.ExitCode = 99
+						spec.Output = err.Error()
+						spec.Hostname = "unknown"
+						spec.Completed = fmt.Sprint(time.Now().Format("20060102150405"), rand.Intn(9))
+
+						go write(spec)
+					}
 				})
 			}
 		}
@@ -167,7 +175,7 @@ func parseSpec(path string) (s Spec) {
 	return s
 }
 
-func sendWorker(spec Spec) {
+func sendWorker(spec Spec) (Spec, error) {
 	Ld("in sendWorkder")
 	spec.Started = fmt.Sprint(time.Now().Format("20060102150405"), rand.Intn(9))
 	client := &http.Client{}
@@ -177,19 +185,31 @@ func sendWorker(spec Spec) {
 		spec.Id = spec.Started + "_" + spec.Hostname + "_" + spec.Key
 
 		if err := writeDB(spec); err != nil {
-			Le(err)
+			return spec, err
 		}
 
 		m, _ := json.Marshal(spec)
 
-		req, _ := http.NewRequest(
+		req, err := http.NewRequest(
 			"POST",
 			"http://"+spec.Hostname+":8081/worker",
 			bytes.NewBuffer(m),
 		)
+		if err != nil {
+			return spec, err
+		}
+
 		req.Header.Set("Content-Type", "application/json; charset=utf-8")
-		if _, err := client.Do(req); err != nil {
-			Le(err)
+		resp, err := client.Do(req)
+		// defer resp.Body.Close()
+		if err != nil {
+			return spec, err
+		}
+
+		if resp.StatusCode != 200 {
+			err := errors.New("HTTP Status code error")
+			return spec, err
 		}
 	}
+	return spec, nil
 }
