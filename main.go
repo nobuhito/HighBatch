@@ -7,12 +7,11 @@ import (
 	"bytes"
 	"io/ioutil"
 	"fmt"
-	"path/filepath"
 )
 
 func main() {
 
-	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+	dir, err := os.Getwd()
 	fmt.Println(dir)
 	if err != nil {
 		fmt.Println(err)
