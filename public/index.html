@@ -13,6 +13,15 @@
     <link rel="shortcut icon" href="">
     <style>
        body { padding-top: 70px; }
+       .btn {
+           margin-left: 5px;
+       }
+       .glyphicon {
+           margin-right: 2px;
+       }
+       .resolve {
+           float: right;
+       }
        .execute {
            float: right;
        }
@@ -59,6 +68,8 @@
                          "text-success glyphicon-ok";
          exitClass = (d["completed"] == "")?
                      "text-success glyphicon glyphicon-repeat": exitClass;
+         exitClass = (d["resolved"] != "")?
+                     "text-primary glyphicon glyphicon-thumbs-up": exitClass;
          var titleAlert = $("<div>").append(
              $("<span>").addClass(exitClass)
                         .addClass("glyphicon")
@@ -169,7 +180,7 @@
 
          for (j in d) {
              var s = d[j];
-             var notPrintItems = ["output", "durationInt", "durationAve"]
+             var notPrintItems = ["output", "durationInt", "durationAve", "id", "key"]
              if (notPrintItems.indexOf(j) > -1 || s == "" || s == null ) { continue };
              if (j == "chain") {
                  var arrow = (d["onErrorStop"] == "" || d["exitCode"] == 0)?
@@ -180,7 +191,7 @@
                      s = ""
                  }
              }
-             if (j == "completed" || j == "started") {
+             if (["completed", "started", "resolved"].indexOf(j) > -1) {
                  s = dt2datetime(s);
              }
              if (j == "duration") {
@@ -212,9 +223,12 @@
 
          var panelBody = $("<div>").addClass("panel-body")
                                    .append(info);
+
          if (d["completed"] != "") {
 
              var tabPanel = getTabPanel(d);
+             panelBody.append(tabPanel);
+
              panelBody.append(
                  $("<a>").addClass("execute btn btn-danger")
                          .attr("href", "/exec/" + d["key"])
@@ -224,7 +238,19 @@
                                         .attr("aria-hidden", "true")
                          )
              );
-             panelBody.append(tabPanel);
+
+             if (d["exitCode"] != 0 && d["resolved"] == "") {
+                 panelBody.append(
+                     $("<a>").addClass("resolve btn btn-primary")
+                             .attr("href", "/resolve/" + d["id"])
+                             .text("Resolve")
+                             .prepend(
+                                 $("<span>").addClass("glyphicon glyphicon-thumbs-up")
+                                            .attr("aria-hidden", "true")
+                             )
+                 );
+
+             }
          } else {
              var progress = $("<div>").addClass("progress");
              var v = getProgresValue(d["durationAve"], d["started"]);
@@ -301,11 +327,12 @@
                  var tag = 0;
                  for (var i in items[hostname][key]["error"]) {
                      error = items[hostname][key]["error"][i];
-                     k.nodes.push({
+                     var item = {
                          "text": dt2datetime(error),
                          "icon": "glyphicon glyphicon-exclamation-sign",
                          "href": "#p-" + error
-                     });
+                     };
+                     k.nodes.push(item);
                      tag++;
                  }
                  if (tag > 0) { k.tags = [tag]; }
@@ -398,7 +425,7 @@
 
                      var k = d["key"];
                      if (!("error" in items[h][k])) { items[h][k]["error"] = []; }
-                     if (d["exitCode"] > 0) {
+                     if (d["exitCode"] > 0 && d["resolved"] == "") {
                          items[h][k]["error"].push(d["id"]);
                      }
                  }

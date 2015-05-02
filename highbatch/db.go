@@ -73,9 +73,30 @@ func store(key string, value []byte) error {
 	return nil
 }
 
-func get(f filter) workerOuts {
+func getOne(id string) Spec {
+	Ld("in GetOne")
+	var spec Spec
+	db, err := bolt.Open(dbname, 0600, nil)
+	if err != nil {
+		Le(err)
+		}
+	defer db.Close()
+
+	db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(bucketname))
+		v := b.Get([]byte(id))
+		if err := json.Unmarshal(v, &spec); err != nil {
+			Le(err)
+		}
+		return nil
+	})
+
+	return spec
+}
+
+func getLists(f filter) workerOuts {
+	Ld("in GetLists")
 	var wos workerOuts
-	Ld("in Get")
 	db, err := bolt.Open(dbname, 0600, nil)
 	if err != nil {
 		Le(err)

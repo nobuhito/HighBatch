@@ -18,6 +18,7 @@ import (
 	"golang.org/x/net/html/charset"
 	"os"
 	"strings"
+	"time"
 )
 
 func route(m *web.Mux) {
@@ -27,6 +28,7 @@ func route(m *web.Mux) {
 	m.Get("/dump/:num", dumpHandler)
 	m.Get("/dump", dumpHandler)
 	m.Get("/exec/:key", execHandler)
+	m.Get("/resolve/:id",resolveHandler)
 	m.Get("/data/:machine/:task/:completed", dataHandler)
 	m.Get("/data/:machine/:task", dataHandler)
 	m.Get("/data/:machine", dataHandler)
@@ -114,7 +116,7 @@ func dataHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 		f.start = c.URLParams["completed"]
 	}
 
-	j, _ := json.Marshal(get(f))
+	j, _ := json.Marshal(getLists(f))
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	fmt.Fprintf(w, string(j))
 }
@@ -172,6 +174,17 @@ func execHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	http.Redirect(w, r, "/", 301)
+}
+
+func resolveHandler(c web.C, w http.ResponseWriter, r *http.Request) {
+	fmt.Println("resolveHandler")
+	spec := getOne(c.URLParams["id"])
+	spec.Resolved = time.Now().Format("20060102150405")
+	if err := writeDB(spec); err != nil {
+		Le(err)
+	}
+	http.Redirect(w, r, "/", 301)
+
 }
 
 func workerHandler(c web.C, w http.ResponseWriter, r *http.Request) {

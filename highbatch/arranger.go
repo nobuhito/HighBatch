@@ -43,6 +43,7 @@ type Spec struct {
 	ExitCode    int    `json:"exitCode"`
 	Output      string `json:"output"`
 	DurationInt string `json:"durationInt"`
+	Resolved    string `json:"resolved"`
 }
 
 func StartArranger() {
