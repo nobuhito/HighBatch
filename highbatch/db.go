@@ -112,8 +112,34 @@ func getSpec(bucketname, key string) Spec {
 	return spec
 }
 
-func getLists(bucketname string, f filter) workerOuts {
-	ld("in GetLists")
+func getWorkerList() (w WorkersInfo) {
+	ld("in get worker list")
+	db, err := bolt.Open(dbname, 0600, nil)
+	if err != nil {
+		le(err)
+	}
+	defer db.Close()
+
+	db.View(func(tx *bolt.Tx) error {
+		c := tx.Bucket([]byte("workers")).Cursor()
+		for k, v := c.First(); k != nil; k, v = c.Next() {
+			var workerinfo WorkerInfo
+			_ = json.Unmarshal(v, &workerinfo)
+
+			if time.Since(workerinfo.Datetime).Minutes() > 5 {
+				workerinfo.IsAlive = 0
+			} else {
+				workerinfo.IsAlive = 1
+			}
+			w = append(w, workerinfo)
+		}
+		return nil
+	})
+	return w
+}
+
+func getSpecList(bucketname string, f filter) workerOuts {
+	ld("in GetSpecLists")
 	var wos workerOuts
 	db, err := bolt.Open(dbname, 0600, nil)
 	if err != nil {

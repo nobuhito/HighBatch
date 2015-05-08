@@ -27,7 +27,8 @@ func route(m *web.Mux) {
 	m.Post("/logger", loggerHandler)
 	m.Get("/dump/:num", dumpHandler)
 	m.Get("/dump", dumpHandler)
-	m.Get("/workers", workersHandler)
+	m.Get("/worker/dump", workerDumpHandler)
+	m.Get("/worker/list", workerListHandler)
 	m.Get("/exec/:key", execHandler)
 	m.Get("/resolve/:id", resolveHandler)
 	m.Get("/data/:machine/:task/:completed", dataHandler)
@@ -117,14 +118,14 @@ func dataHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 		f.start = c.URLParams["completed"]
 	}
 
-	j, _ := json.Marshal(getLists("highbatch", f))
+	j, _ := json.Marshal(getSpecList("highbatch", f))
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	fmt.Fprintf(w, string(j))
 }
 
 func kaHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 
-	v := WorkerInfo{c.URLParams["host"], c.URLParams["port"], time.Now()}
+	v := WorkerInfo{c.URLParams["host"], c.URLParams["port"], time.Now(), 0}
 	values, err := json.Marshal(&v)
 	if err != nil {
 		le(err)
@@ -217,8 +218,15 @@ func dumpHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, string(j))
 }
 
-func workersHandler(c web.C, w http.ResponseWriter, r *http.Request) {
+func workerDumpHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	items := dump("workers", 10)
+	j, _ := json.Marshal(items)
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	fmt.Fprint(w, string(j))
+}
+
+func workerListHandler(c web.C, w http.ResponseWriter, r *http.Request) {
+	items := getWorkerList()
 	j, _ := json.Marshal(items)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	fmt.Fprint(w, string(j))

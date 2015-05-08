@@ -309,40 +309,52 @@
          return datetime;
      }
 
-     function getTree(items) {
-         var tree = [];
-         for (var hostname in items) {
-             alltag = 0;
-             var h = {};
-             h.text = hostname;
-             h.icon = "glyphicon glyphicon-tasks"
-             h.href = "#" + hostname;
-             h.nodes = [];
-             for (var key in items[hostname]) {
-                 var k = {};
-                 k.text = items[hostname][key]["name"];
-                 k.icon = "glyphicon glyphicon-time";
-                 k.href = "#" + hostname + "/" + key;
-                 k.nodes = [];
-                 var tag = 0;
-                 for (var i in items[hostname][key]["error"]) {
-                     error = items[hostname][key]["error"][i];
-                     var item = {
-                         "text": dt2datetime(error),
-                         "icon": "glyphicon glyphicon-exclamation-sign",
-                         "href": "#p-" + error
-                     };
-                     k.nodes.push(item);
-                     tag++;
-                 }
-                 if (tag > 0) { k.tags = [tag]; }
-                 h.nodes.push(k);
-                 alltag = alltag + tag;
+     function getTree(items, cb) {
+         $.ajax({
+             url: "/worker/list",
+             cache: false
+         }).done( function(data) {
+             var workers = {};
+             for (var w in data) {
+                 console.log(data)
+                 workers[data[w]["host"]] = data[w]["isAlive"]
              }
-             if (alltag > 0) { h.tags = [alltag]; }
-             tree.push(h);
-         }
-         return tree;
+             console.log(workers);
+             var tree = [];
+             for (var hostname in items) {
+                 alltag = 0;
+                 var h = {};
+                 var icon = (workers[hostname] == 1)? "glyphicon glyphicon-tasks": "glyphicon glyphicon-question-sign text-danger";
+                 h.text = hostname;
+                 h.icon = icon
+                 h.href = "#" + hostname;
+                 h.nodes = [];
+                 for (var key in items[hostname]) {
+                     var k = {};
+                     k.text = items[hostname][key]["name"];
+                     k.icon = "glyphicon glyphicon-time";
+                     k.href = "#" + hostname + "/" + key;
+                     k.nodes = [];
+                     var tag = 0;
+                     for (var i in items[hostname][key]["error"]) {
+                         error = items[hostname][key]["error"][i];
+                         var item = {
+                             "text": dt2datetime(error),
+                             "icon": "glyphicon glyphicon-exclamation-sign",
+                             "href": "#p-" + error
+                         };
+                         k.nodes.push(item);
+                         tag++;
+                     }
+                     if (tag > 0) { k.tags = [tag]; }
+                     h.nodes.push(k);
+                     alltag = alltag + tag;
+                 }
+                 if (alltag > 0) { h.tags = [alltag]; }
+                 tree.push(h);
+             }
+             cb(tree);
+         });
      }
 
      function doTreeview(tree) {
@@ -432,8 +444,9 @@
              }
 
              if (bothTree == true) {
-                 var tree = getTree(items);
-                 doTreeview(tree);
+                 getTree(items, function(tree) {
+                     doTreeview(tree);
+                 });
              }
 
              $(".collapse").collapse('hide');
