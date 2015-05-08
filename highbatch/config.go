@@ -20,11 +20,11 @@ type MasterConfig struct {
 type WorkerConfig struct {
 	Host     string
 	Port     string
+	LogLevel int
 	IsMaster bool
 }
 
 func loadConfig() (c Config) {
-	ld("in LoadConfig")
 	if _, err := toml.DecodeFile("config.toml", &Conf); err != nil {
 		le(err)
 	}

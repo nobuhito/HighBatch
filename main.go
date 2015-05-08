@@ -20,7 +20,6 @@ func main() {
 	}
 
 	dir, _ := filepath.Split(fullexecpath)
-	fmt.Println(dir)
 
 	if err := os.Chdir(dir); err != nil {
 		fmt.Println(err)

@@ -55,7 +55,6 @@ func startArranger() {
 
 		for i := range specs {
 			spec := specs[i]
-			li(fmt.Sprintf("%v", spec))
 			if spec.Schedule != "" {
 				c.AddFunc(spec.Schedule, func() {
 					if spec, err := sendWorker(spec); err != nil {

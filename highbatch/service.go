@@ -4,28 +4,27 @@ import (
 	"fmt"
 	"github.com/kardianos/service"
 	"os"
+	"strconv"
 )
 
 type program struct{}
 
 var logger service.Logger
 
+var loglevel int 								// 1:info 2:error 3:warn
+
 func (p *program) Start(s service.Service) error {
-	fmt.Println("HighBatch service start.")
 	go p.run()
 	return nil
 }
 
 func (p *program) run() {
 
-	logInit("debug")
-	ld("init logging")
-
-	ld("start HighBatch")
+	logger.Info("start HighBatch")
 
 	// 設定ファイルの読み込み
 	loadConfig()
-	ld("load config")
+	logInit(Conf.Worker.LogLevel)
 
 	if Conf.Worker.IsMaster { // マスターの場合
 
@@ -62,14 +61,11 @@ func (p *program) Stop(s service.Service) error {
 }
 
 func ServiceInit() {
-	fmt.Println("in service init")
 	svcConfig := &service.Config{
 		Name:        "HighBatch",
 		DisplayName: "HighBatch client",
 		Description: "Client for HighBatch. http://highbatch:8081",
 	}
-
-	fmt.Println(svcConfig)
 
 	prog := &program{}
 	s, err := service.New(prog, svcConfig)
@@ -82,8 +78,6 @@ func ServiceInit() {
 	if err != nil {
 		fmt.Println(err)
 	}
-
-	logger.Info(os.Getwd())
 
 	if len(os.Args) > 1 {
 		fmt.Println(len(os.Args))
@@ -113,20 +107,37 @@ func ServiceInit() {
 
 }
 
-func logInit(loglevel string) {
-
+func logInit(l int) {
+	loglevel = l
+	if l == 0 {
+		loglevel = 3
+	}
+	if os.Getenv("HighBatchLogLevel") != "" {
+		envLogLevel, err := strconv.Atoi(os.Getenv("HighBatchLogLevel"))
+		if err != nil {
+			loglevel = 3
+		} else {
+			loglevel = envLogLevel
+		}
+	}
 }
 
 func ld(msg string) {
-	logger.Info(msg)
+	if loglevel < 2 {
+		logger.Info(msg)
+	}
 }
 
 func li(msg string) {
-	logger.Info(msg)
+	if loglevel < 2 {
+		logger.Info(msg)
+	}
 }
 
 func lw(msg string) {
-	logger.Warning(msg)
+	if loglevel < 3 {
+		logger.Warning(msg)
+	}
 }
 
 func le(err error) {

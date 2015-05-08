@@ -3,7 +3,6 @@ package highbatch
 import (
 	"archive/zip"
 	"bytes"
-	"fmt"
 	"github.com/go-fsnotify/fsnotify"
 	"io"
 	"io/ioutil"
@@ -45,8 +44,7 @@ func watchTasks() {
 		for {
 			select {
 			case event := <-watcher.Events:
-				li(fmt.Sprint(event))
-				ld("tasks change")
+				ld("tasks change: " + event.Name)
 				doZip("tasks", zipfile)
 				info, _ := os.Stat(zipfile)
 				changeDate = info.ModTime().Format("20060102150405")
@@ -125,7 +123,6 @@ func doZip(archivePath string, zipPath string) {
 			if info.IsDir() {
 				return nil
 			}
-			li(fmt.Sprint(path))
 			body, err := ioutil.ReadFile(path)
 			if err != nil {
 				le(err)

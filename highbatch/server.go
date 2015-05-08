@@ -165,12 +165,9 @@ func loggerHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 }
 
 func execHandler(c web.C, w http.ResponseWriter, r *http.Request) {
-	fmt.Println("execHandler")
 	specs := taskFileSerch()
 	for i := range specs {
 		spec := specs[i]
-		fmt.Println(spec.Key)
-		fmt.Println(c.URLParams["key"])
 		if spec.Key == c.URLParams["key"] {
 			spec.Schedule = "manual"
 			sendWorker(spec)
@@ -181,7 +178,6 @@ func execHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 }
 
 func resolveHandler(c web.C, w http.ResponseWriter, r *http.Request) {
-	fmt.Println("resolveHandler")
 	spec := getSpec("highbatch", c.URLParams["id"])
 	spec.Resolved = time.Now().Format("20060102150405")
 	if err := writeDB(spec); err != nil {
