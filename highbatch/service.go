@@ -92,13 +92,13 @@ func ServiceInit() {
 		case "install":
 			err = s.Install()
 			if err != nil {
-				fmt.Println("Failed to install %s\n", err)
+				fmt.Printf("Failed to install %s\n", err)
 				return
 			}
 		case "uninstall":
 			err = s.Uninstall()
 			if err != nil {
-				fmt.Println("Faild to uninstall %s\n", err)
+				fmt.Printf("Faild to uninstall %s\n", err)
 				return
 			}
 		}

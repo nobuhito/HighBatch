@@ -68,7 +68,7 @@ func sendKeepalive() {
 		info, _ := os.Stat("tasks.zip")
 		downloadedDate := info.ModTime().Format("20060102150405")
 		uploadedDate := strings.Replace(re, "\"", "", 2)
-		li(fmt.Sprint("%s : %s", uploadedDate, downloadedDate))
+		li(fmt.Sprintf("%s : %s\n", uploadedDate, downloadedDate))
 		if uploadedDate > downloadedDate {
 			refleshTasks()
 		}
