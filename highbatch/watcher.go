@@ -3,13 +3,13 @@ package highbatch
 import (
 	"archive/zip"
 	"bytes"
+	"fmt"
 	"github.com/go-fsnotify/fsnotify"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
-	"fmt"
 )
 
 var zipfile string

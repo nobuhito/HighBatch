@@ -6,6 +6,7 @@ import (
 	"golang.org/x/text/transform"
 	"io"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
 	"os"
 	"os/exec"
@@ -14,7 +15,6 @@ import (
 	"strings"
 	"syscall"
 	"time"
-	"math/rand"
 )
 
 func startWorker() {
@@ -34,7 +34,7 @@ func refleshTasks() {
 
 func getTasks() error {
 	ld("in getTasks")
-	url := "http://" + Conf.Master.Host + ":"+Conf.Master.Port+"/file/tasks.zip"
+	url := "http://" + Conf.Master.Host + ":" + Conf.Master.Port + "/file/tasks.zip"
 	resp, err := http.Get(url)
 	if err != nil {
 		le(err)

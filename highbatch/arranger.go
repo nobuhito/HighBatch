@@ -5,6 +5,8 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"github.com/BurntSushi/toml"
 	"github.com/robfig/cron"
 	"io"
@@ -15,8 +17,6 @@ import (
 	"regexp"
 	"strings"
 	"time"
-	"fmt"
-	"errors"
 )
 
 type Spec struct {

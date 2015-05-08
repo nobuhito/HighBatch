@@ -134,7 +134,7 @@ func sendMaster(wo Spec) error {
 
 	req, err := http.NewRequest(
 		"POST",
-		"http://"+Conf.Master.Host+":"+ Conf.Master.Port+ "/logger",
+		"http://"+Conf.Master.Host+":"+Conf.Master.Port+"/logger",
 		bytes.NewBuffer(m),
 	)
 	req.Header.Set("Content-Type", "application/json; charset=utf-8")

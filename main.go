@@ -2,14 +2,14 @@ package main
 
 import (
 	"./highbatch"
-	"github.com/BurntSushi/toml"
-	"os"
 	"bytes"
-	"io/ioutil"
 	"fmt"
-	"runtime"
-	"path/filepath"
+	"github.com/BurntSushi/toml"
 	"github.com/kardianos/osext"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"runtime"
 )
 
 func main() {
@@ -84,7 +84,7 @@ func bootCheck() bool {
 		var buffer bytes.Buffer
 		encoder := toml.NewEncoder(&buffer)
 		if err := encoder.Encode(config); err != nil {
-			fmt.Println(err);
+			fmt.Println(err)
 		}
 		if err := ioutil.WriteFile(configfile, []byte(buffer.String()), 0644); err != nil {
 			fmt.Println(err)

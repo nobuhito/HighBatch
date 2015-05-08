@@ -1,22 +1,22 @@
 package highbatch
 
 import (
+	"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/zenazn/goji"
-	"github.com/zenazn/goji/web/middleware"
-	"github.com/goji/glogrus"
 	"github.com/Sirupsen/logrus"
+	"github.com/goji/glogrus"
+	"github.com/zenazn/goji"
 	"github.com/zenazn/goji/web"
+	"github.com/zenazn/goji/web/middleware"
+	"golang.org/x/net/html/charset"
+	"golang.org/x/text/transform"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"regexp"
 	"strconv"
-	"golang.org/x/text/transform"
-	"bytes"
-	"golang.org/x/net/html/charset"
-	"os"
 	"strings"
 	"time"
 )
@@ -29,7 +29,7 @@ func route(m *web.Mux) {
 	m.Get("/dump", dumpHandler)
 	m.Get("/workers", workersHandler)
 	m.Get("/exec/:key", execHandler)
-	m.Get("/resolve/:id",resolveHandler)
+	m.Get("/resolve/:id", resolveHandler)
 	m.Get("/data/:machine/:task/:completed", dataHandler)
 	m.Get("/data/:machine/:task", dataHandler)
 	m.Get("/data/:machine", dataHandler)
@@ -61,7 +61,7 @@ func startWebserver() {
 
 	logger := logrus.Logger{
 		Formatter: &logrus.TextFormatter{DisableColors: true},
-		Out: f,
+		Out:       f,
 	}
 
 	goji.Use(glogrus.NewGlogrus(&logger, "HighBatch"))

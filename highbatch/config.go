@@ -13,13 +13,13 @@ type Config struct {
 }
 
 type MasterConfig struct {
-	Host        string
+	Host string
 	Port string
 }
 
 type WorkerConfig struct {
-	Host string
-	Port string
+	Host     string
+	Port     string
 	IsMaster bool
 }
 

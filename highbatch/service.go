@@ -1,8 +1,8 @@
 package highbatch
 
 import (
-	"github.com/kardianos/service"
 	"fmt"
+	"github.com/kardianos/service"
 	"os"
 )
 
@@ -64,7 +64,7 @@ func (p *program) Stop(s service.Service) error {
 func ServiceInit() {
 	fmt.Println("in service init")
 	svcConfig := &service.Config{
-		Name: "HighBatch",
+		Name:        "HighBatch",
 		DisplayName: "HighBatch client",
 		Description: "Client for HighBatch. http://highbatch:8081",
 	}

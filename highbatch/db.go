@@ -1,8 +1,8 @@
 package highbatch
 
 import (
-	"github.com/boltdb/bolt"
 	"encoding/json"
+	"github.com/boltdb/bolt"
 	"regexp"
 	"sort"
 	"time"
@@ -17,9 +17,9 @@ type KeyValues []KeyValue
 type workerOuts []Spec
 
 type filter struct {
-	start     string
-	machine   string
-	task      string
+	start   string
+	machine string
+	task    string
 }
 
 func (w workerOuts) Len() int {
@@ -56,7 +56,6 @@ func initdb() {
 		le(err)
 	}
 
-
 }
 
 func store(bucketname, key string, value []byte) error {
@@ -80,7 +79,7 @@ func store(bucketname, key string, value []byte) error {
 	return nil
 }
 
-func get(bucketname, key string) (ret string){
+func get(bucketname, key string) (ret string) {
 	ld("in get")
 	db, err := bolt.Open(dbname, 0600, nil)
 	if err != nil {
@@ -119,7 +118,7 @@ func getLists(bucketname string, f filter) workerOuts {
 	db, err := bolt.Open(dbname, 0600, nil)
 	if err != nil {
 		le(err)
-		}
+	}
 	defer db.Close()
 
 	reg := "^\\d{4}\\d{2}\\d{2}\\d{2}\\d{2}\\d{2}$"
@@ -128,7 +127,7 @@ func getLists(bucketname string, f filter) workerOuts {
 		le(err)
 	}
 
-	span := 30 										// 初期値は30日分
+	span := 30 // 初期値は30日分
 	since := time.Now().AddDate(0, 0, span*-1).Format("20060102150405")
 
 	db.View(func(tx *bolt.Tx) error {
@@ -184,7 +183,7 @@ func dump(bucketname string, num int) (kvs KeyValues) {
 		i := 0
 		for k, v := c.First(); k != nil; k, v = c.Next() {
 			kv := KeyValue{
-				Key: string(k),
+				Key:   string(k),
 				Value: string(v),
 			}
 			kvs = append(kvs, kv)
