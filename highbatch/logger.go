@@ -134,7 +134,7 @@ func sendMaster(wo Spec) error {
 
 	req, err := http.NewRequest(
 		"POST",
-		"http://"+Conf.Client.Master.Hostname+":8081/logger",
+		"http://"+Conf.Master.Host+":"+ Conf.Master.Port+ "/logger",
 		bytes.NewBuffer(m),
 	)
 	req.Header.Set("Content-Type", "application/json; charset=utf-8")
@@ -164,7 +164,7 @@ func writeDB(wo Spec) error {
 		return err
 	}
 
-	if err := store(key, value); err != nil {
+	if err := store("highbatch", key, value); err != nil {
 		return err
 	}
 

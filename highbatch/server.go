@@ -22,11 +22,12 @@ import (
 )
 
 func route(m *web.Mux) {
-	m.Get("/ka", kaHandler)
+	m.Get("/ka/:host/:port", kaHandler)
 	m.Post("/worker", workerHandler)
 	m.Post("/logger", loggerHandler)
 	m.Get("/dump/:num", dumpHandler)
 	m.Get("/dump", dumpHandler)
+	m.Get("/workers", workersHandler)
 	m.Get("/exec/:key", execHandler)
 	m.Get("/resolve/:id",resolveHandler)
 	m.Get("/data/:machine/:task/:completed", dataHandler)
@@ -116,12 +117,15 @@ func dataHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 		f.start = c.URLParams["completed"]
 	}
 
-	j, _ := json.Marshal(getLists(f))
+	j, _ := json.Marshal(getLists("highbatch", f))
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	fmt.Fprintf(w, string(j))
 }
 
 func kaHandler(c web.C, w http.ResponseWriter, r *http.Request) {
+
+	_ = store("workers", c.URLParams["host"], []byte(c.URLParams["port"]))
+
 	j, _ := json.Marshal(changeDate)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	fmt.Fprintf(w, string(j))
@@ -178,7 +182,7 @@ func execHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 
 func resolveHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	fmt.Println("resolveHandler")
-	spec := getOne(c.URLParams["id"])
+	spec := getSpec("highbatch", c.URLParams["id"])
 	spec.Resolved = time.Now().Format("20060102150405")
 	if err := writeDB(spec); err != nil {
 		le(err)
@@ -206,7 +210,14 @@ func dumpHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		num = 50 // 初期値は50
 	}
-	items := dump(num)
+	items := dump("highbatch", num)
+	j, _ := json.Marshal(items)
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	fmt.Fprint(w, string(j))
+}
+
+func workersHandler(c web.C, w http.ResponseWriter, r *http.Request) {
+	items := dump("workers", 10)
 	j, _ := json.Marshal(items)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	fmt.Fprint(w, string(j))

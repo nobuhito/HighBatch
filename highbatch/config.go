@@ -2,32 +2,25 @@ package highbatch
 
 import (
 	"github.com/BurntSushi/toml"
+	"os"
 )
 
 var Conf Config
 
 type Config struct {
-	Server ServerConfig
-	Client ClientConfig
-}
-
-type ServerConfig struct {
-	Name        string
-	MongoDbHost string
-}
-
-type ClientConfigFile struct {
-	Client ClientConfig
-}
-
-type ClientConfig struct {
-	Tag    []string
 	Master MasterConfig
+	Worker WorkerConfig
 }
 
 type MasterConfig struct {
-	Hostname string
-	Port     string
+	Host        string
+	Port string
+}
+
+type WorkerConfig struct {
+	Host string
+	Port string
+	IsMaster bool
 }
 
 func loadConfig() (c Config) {
@@ -36,5 +29,10 @@ func loadConfig() (c Config) {
 		le(err)
 	}
 	c = Conf
+
+	if os.Getenv("HighBatchIsMaster") != "" {
+		c.Worker.IsMaster = true
+	}
+
 	return
 }

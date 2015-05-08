@@ -35,7 +35,6 @@ func (w workerOuts) Less(i, j int) bool {
 }
 
 const dbname = "HighBatch.db"
-const bucketname = "hibhbatch"
 
 func initdb() {
 	db, err := bolt.Open(dbname, 0600, nil)
@@ -45,14 +44,22 @@ func initdb() {
 	defer db.Close()
 
 	if err := db.Update(func(tx *bolt.Tx) error {
-		_, err := tx.CreateBucketIfNotExists([]byte(bucketname))
+		_, err := tx.CreateBucketIfNotExists([]byte("workers")) // Workerリスト
 		return err
 	}); err != nil {
 		le(err)
 	}
+	if err := db.Update(func(tx *bolt.Tx) error {
+		_, err := tx.CreateBucketIfNotExists([]byte("highbatch")) // データ用
+		return err
+	}); err != nil {
+		le(err)
+	}
+
+
 }
 
-func store(key string, value []byte) error {
+func store(bucketname, key string, value []byte) error {
 	ld("in Store")
 	db, err := bolt.Open(dbname, 0600, nil)
 	if err != nil {
@@ -73,28 +80,40 @@ func store(key string, value []byte) error {
 	return nil
 }
 
-func getOne(id string) Spec {
-	ld("in GetOne")
-	var spec Spec
+func get(bucketname, key string) (ret string){
+	ld("in get")
 	db, err := bolt.Open(dbname, 0600, nil)
 	if err != nil {
 		le(err)
-		}
+	}
 	defer db.Close()
 
-	db.View(func(tx *bolt.Tx) error {
+	if err := db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(bucketname))
-		v := b.Get([]byte(id))
-		if err := json.Unmarshal(v, &spec); err != nil {
-			le(err)
+		val := b.Get([]byte(key))
+		if val != nil {
+			ret = string(val)
 		}
 		return nil
-	})
+	}); err != nil {
+		le(err)
+	}
+	return ret
+}
+
+func getSpec(bucketname, key string) Spec {
+	ld("in GetSpec")
+	var spec Spec
+
+	v := get(bucketname, key)
+	if err := json.Unmarshal([]byte(v), &spec); err != nil {
+		le(err)
+	}
 
 	return spec
 }
 
-func getLists(f filter) workerOuts {
+func getLists(bucketname string, f filter) workerOuts {
 	ld("in GetLists")
 	var wos workerOuts
 	db, err := bolt.Open(dbname, 0600, nil)
@@ -150,7 +169,7 @@ func getLists(f filter) workerOuts {
 	return wos
 }
 
-func dump(num int) (kvs KeyValues) {
+func dump(bucketname string, num int) (kvs KeyValues) {
 	ld("in Dump")
 	db, err := bolt.Open(dbname, 0600, nil)
 	if err != nil {

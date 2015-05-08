@@ -27,7 +27,7 @@ func (p *program) run() {
 	loadConfig()
 	ld("load config")
 
-	if Conf.Server.Name != "" { // マスターの場合
+	if Conf.Worker.IsMaster { // マスターの場合
 
 		// DBの作成
 		initdb()

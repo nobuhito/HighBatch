@@ -27,14 +27,14 @@ func refleshTasks() {
 	ld("in refleshTasks")
 	if err := getTasks(); err != nil {
 		le(err)
-	} else if Conf.Server.Name == "" {
+	} else if !Conf.Worker.IsMaster { // Master以外のとき
 		doUnzip("tasks.zip")
 	}
 }
 
 func getTasks() error {
 	ld("in getTasks")
-	url := "http://" + Conf.Client.Master.Hostname + ":8081/file/tasks.zip"
+	url := "http://" + Conf.Master.Host + ":"+Conf.Master.Port+"/file/tasks.zip"
 	resp, err := http.Get(url)
 	if err != nil {
 		le(err)
@@ -56,7 +56,11 @@ func getTasks() error {
 func sendKeepalive() {
 	ld("in sendKeepalive")
 	for {
-		re, err := getData("http://" + Conf.Client.Master.Hostname + ":8081/ka")
+		time.Sleep(60 * time.Second)
+		m := Conf.Master
+		w := Conf.Worker
+		url := fmt.Sprintf("http://%s:%s/ka/%s/%s", m.Host, m.Port, w.Host, w.Port)
+		re, err := getData(url)
 		if err != nil {
 			le(err)
 		}
@@ -69,7 +73,6 @@ func sendKeepalive() {
 			refleshTasks()
 		}
 
-		time.Sleep(60 * time.Second)
 	}
 }
 

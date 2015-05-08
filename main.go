@@ -68,12 +68,18 @@ func bootCheck() bool {
 	configfile := "config.toml"
 
 	if _, err := os.Stat(configfile); err != nil {
-		var config highbatch.ClientConfigFile
 
-		tag := []string{"test"}
-		config.Client.Tag = tag
-		config.Client.Master.Hostname = "localhost"
-		config.Client.Master.Port = "8081"
+		host, err := os.Hostname()
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		var config highbatch.Config
+
+		config.Master.Host = "highbatch"
+		config.Master.Port = "8081"
+		config.Worker.Host = host
+		config.Worker.Port = "8081"
 
 		var buffer bytes.Buffer
 		encoder := toml.NewEncoder(&buffer)

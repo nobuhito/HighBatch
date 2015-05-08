@@ -165,8 +165,6 @@ func parseSpec(path string) (s Spec) {
 		le(err)
 	}
 
-	li(fmt.Sprint(path))
-
 	name := strings.Split(path, string(os.PathSeparator))[1]
 	key := md5.Sum([]byte(name))
 	s.Key = hex.EncodeToString(key[:])
@@ -183,6 +181,12 @@ func sendWorker(spec Spec) (Spec, error) {
 	for i := range spec.Machine {
 
 		spec.Hostname = spec.Machine[i]
+
+		workerPort := get("workers", spec.Hostname)
+		if workerPort == "" {
+			continue
+		}
+
 		spec.Id = spec.Started + "_" + spec.Hostname + "_" + spec.Key
 
 		if err := writeDB(spec); err != nil {
@@ -193,7 +197,7 @@ func sendWorker(spec Spec) (Spec, error) {
 
 		req, err := http.NewRequest(
 			"POST",
-			"http://"+spec.Hostname+":8081/worker",
+			"http://"+spec.Hostname+":"+workerPort+"/worker",
 			bytes.NewBuffer(m),
 		)
 		if err != nil {
