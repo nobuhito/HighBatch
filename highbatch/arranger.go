@@ -180,13 +180,26 @@ func sendWorker(spec Spec) (Spec, error) {
 	for i := range spec.Machine {
 
 		spec.Hostname = spec.Machine[i]
+		spec.Id = spec.Started + "_" + spec.Hostname + "_" + spec.Key
 
-		workerPort := get("workers", spec.Hostname)
-		if workerPort == "" {
-			continue
+		var w WorkerInfo
+		err := json.Unmarshal([]byte(get("workers", spec.Hostname)), &w)
+
+		if err != nil {
+			err = errors.New("invalid port number\n" + err.Error())
+			return spec, err
 		}
 
-		spec.Id = spec.Started + "_" + spec.Hostname + "_" + spec.Key
+		if time.Since(w.Datetime).Minutes() > 5 {
+			duration := time.Since(w.Datetime).String()
+			err := errors.New("No keep-alive sent from client in over " + duration)
+			return spec, err
+		}
+
+		if w.Port == "" {
+			err := errors.New("invalid port number.\n port: " + w.Port)
+			return spec, err
+		}
 
 		if err := writeDB(spec); err != nil {
 			return spec, err
@@ -196,7 +209,7 @@ func sendWorker(spec Spec) (Spec, error) {
 
 		req, err := http.NewRequest(
 			"POST",
-			"http://"+spec.Hostname+":"+workerPort+"/worker",
+			"http://"+spec.Hostname+":"+w.Port+"/worker",
 			bytes.NewBuffer(m),
 		)
 		if err != nil {

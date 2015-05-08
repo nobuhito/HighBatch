@@ -124,7 +124,12 @@ func dataHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 
 func kaHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 
-	_ = store("workers", c.URLParams["host"], []byte(c.URLParams["port"]))
+	v := WorkerInfo{c.URLParams["host"], c.URLParams["port"], time.Now()}
+	values, err := json.Marshal(&v)
+	if err != nil {
+		le(err)
+	}
+	_ = store("workers", c.URLParams["host"], values)
 
 	j, _ := json.Marshal(changeDate)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
