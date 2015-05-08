@@ -17,27 +17,27 @@ import (
 	"math/rand"
 )
 
-func StartWorker() {
-	Ld("in StartWorker")
+func startWorker() {
+	ld("in StartWorker")
 	refleshTasks()
 	sendKeepalive()
 }
 
 func refleshTasks() {
-	Ld("in refleshTasks")
+	ld("in refleshTasks")
 	if err := getTasks(); err != nil {
-		Le(err)
+		le(err)
 	} else if Conf.Server.Name == "" {
 		doUnzip("tasks.zip")
 	}
 }
 
 func getTasks() error {
-	Ld("in getTasks")
+	ld("in getTasks")
 	url := "http://" + Conf.Client.Master.Hostname + ":8081/file/tasks.zip"
 	resp, err := http.Get(url)
 	if err != nil {
-		Le(err)
+		le(err)
 		return err
 	} else {
 
@@ -45,7 +45,7 @@ func getTasks() error {
 		file, err := os.OpenFile("tasks.zip", os.O_CREATE|os.O_WRONLY, 0644)
 		defer file.Close()
 		if err != nil {
-			Le(err)
+			le(err)
 		}
 
 		io.Copy(file, resp.Body)
@@ -54,17 +54,17 @@ func getTasks() error {
 }
 
 func sendKeepalive() {
-	Ld("in sendKeepalive")
+	ld("in sendKeepalive")
 	for {
 		re, err := getData("http://" + Conf.Client.Master.Hostname + ":8081/ka")
 		if err != nil {
-			Le(err)
+			le(err)
 		}
 
 		info, _ := os.Stat("tasks.zip")
 		downloadedDate := info.ModTime().Format("20060102150405")
 		uploadedDate := strings.Replace(re, "\"", "", 2)
-		Li(fmt.Sprint("%s : %s", uploadedDate, downloadedDate))
+		li(fmt.Sprint("%s : %s", uploadedDate, downloadedDate))
 		if uploadedDate > downloadedDate {
 			refleshTasks()
 		}
@@ -74,7 +74,7 @@ func sendKeepalive() {
 }
 
 func getData(url string) (string, error) {
-	Ld("in getData")
+	ld("in getData")
 	response, err := http.Get(url)
 	if err != nil {
 		return "", err
@@ -85,7 +85,7 @@ func getData(url string) (string, error) {
 }
 
 func worker(wo Spec) {
-	Ld("in Worker")
+	ld("in Worker")
 
 	wo.Started = fmt.Sprint(time.Now().Format("20060102150405"), rand.Intn(9))
 
@@ -100,7 +100,7 @@ func worker(wo Spec) {
 	if wo.Error != "" {
 		isMatch, err := regexp.MatchString(wo.Error, wo.Output)
 		if err != nil {
-			Le(err)
+			le(err)
 		}
 		if isMatch {
 			wo.ExitCode = 99
@@ -112,13 +112,13 @@ func worker(wo Spec) {
 	wo.DurationInt = fmt.Sprint(duration.Nanoseconds())
 	wo.Completed = fmt.Sprint(time.Now().Format("20060102150405"), rand.Intn(9))
 
-	Li(fmt.Sprint(wo))
+	li(fmt.Sprint(wo))
 
 	go write(wo)
 }
 
 func executeWinCmd(path string, cmdSlice []string) (exitCode int, output string) {
-	Ld("in executeWinCmd")
+	ld("in executeWinCmd")
 
 	winbatchSlice := []string{"/c", "call"}
 	jobSlice := append(winbatchSlice, cmdSlice...)

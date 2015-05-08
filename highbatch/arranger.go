@@ -46,8 +46,8 @@ type Spec struct {
 	Resolved    string `json:"resolved"`
 }
 
-func StartArranger() {
-	Ld("in startArranger")
+func startArranger() {
+	ld("in startArranger")
 	for {
 		c := cron.New()
 
@@ -55,7 +55,7 @@ func StartArranger() {
 
 		for i := range specs {
 			spec := specs[i]
-			Li(fmt.Sprintf("%v", spec))
+			li(fmt.Sprintf("%v", spec))
 			if spec.Schedule != "" {
 				c.AddFunc(spec.Schedule, func() {
 					if spec, err := sendWorker(spec); err != nil {
@@ -77,7 +77,7 @@ func StartArranger() {
 }
 
 func taskFileSerch() (specs []Spec) {
-	Ld("in taskFileSerch")
+	ld("in taskFileSerch")
 	root := "tasks"
 
 	if err := filepath.Walk(root,
@@ -98,13 +98,13 @@ func taskFileSerch() (specs []Spec) {
 			return nil
 
 		}); err != nil {
-		Le(err)
+		le(err)
 	}
 	return
 }
 
 func findAssets(task string) (assets []string) {
-	Ld("in findAssets")
+	ld("in findAssets")
 	if err := filepath.Walk(task,
 		func(path string, info os.FileInfo, err error) error {
 			isMatch, err := regexp.MatchString("\\.toml$", path)
@@ -124,7 +124,7 @@ func findAssets(task string) (assets []string) {
 
 			return nil
 		}); err != nil {
-		Le(err)
+		le(err)
 	}
 	return assets
 }
@@ -141,31 +141,31 @@ func copyAsset(path string, copyTo string) error {
 	src, err := os.Open(path)
 	defer src.Close()
 	if err != nil {
-		Le(err)
+		le(err)
 		return err
 	}
 
 	dst, err := os.Create(copyToParent + copyTo)
 	if err != nil {
-		Le(err)
+		le(err)
 		return err
 	}
 
 	if _, err := io.Copy(dst, src); err != nil {
-		Le(err)
+		le(err)
 		return err
 	}
 	return nil
 }
 
 func parseSpec(path string) (s Spec) {
-	Ld("in parseSpec")
+	ld("in parseSpec")
 
 	if _, err := toml.DecodeFile(path, &s); err != nil {
-		Le(err)
+		le(err)
 	}
 
-	Li(fmt.Sprint(path))
+	li(fmt.Sprint(path))
 
 	name := strings.Split(path, string(os.PathSeparator))[1]
 	key := md5.Sum([]byte(name))
@@ -177,7 +177,7 @@ func parseSpec(path string) (s Spec) {
 }
 
 func sendWorker(spec Spec) (Spec, error) {
-	Ld("in sendWorkder")
+	ld("in sendWorkder")
 	spec.Started = fmt.Sprint(time.Now().Format("20060102150405"), rand.Intn(9))
 	client := &http.Client{}
 	for i := range spec.Machine {

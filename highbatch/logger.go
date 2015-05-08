@@ -15,39 +15,39 @@ import (
 )
 
 func write(wo Spec) {
-	Ld("in write")
+	ld("in write")
 	rand.Seed(time.Now().UnixNano())
 
 	if err := writeLocal(wo); err != nil {
-		Le(err)
+		le(err)
 		return
 	}
 
 	if err := sendMaster(wo); err != nil {
-		Le(err)
+		le(err)
 		return
 	}
 
 	if err := deleteLocal(wo.Completed); err != nil {
-		Le(err)
+		le(err)
 		return
 	}
 }
 
 func deleteLocal(filename string) error {
-	Ld("in deleteLocal")
+	ld("in deleteLocal")
 	f := strings.Join([]string{"temp", filename}, string(os.PathSeparator))
 	if _, err := os.Stat(f); err == nil {
 		if err := os.Remove(f); err != nil {
 			return err
 		}
 	}
-	Ld("out deleteLocal")
+	ld("out deleteLocal")
 	return nil
 }
 
 func writeLocal(wo Spec) error {
-	Ld("in writeLocal")
+	ld("in writeLocal")
 	if _, err := os.Stat("temp"); err != nil {
 		if err := os.Mkdir("temp", 0777); err != nil {
 			return err
@@ -67,11 +67,11 @@ func writeLocal(wo Spec) error {
 	return nil
 }
 
-func ReSend() {
-	Ld("in ReSend")
+func reSend() {
+	ld("in ReSend")
 	if _, err := os.Stat("temp"); err != nil {
 		if err := os.Mkdir("temp", 0777); err != nil {
-			Le(err)
+			le(err)
 		}
 	}
 
@@ -88,29 +88,29 @@ func ReSend() {
 				file := strings.Split(path, string(os.PathSeparator))[1]
 				isMatch, err := regexp.MatchString("^\\d{15}$", file)
 				if err != nil || !isMatch {
-					Le(err)
+					le(err)
 					return err
 				}
 
 				contents, err := ioutil.ReadFile(path)
 				if err != nil {
-					Le(err)
+					le(err)
 					return err
 				}
 
 				var wo Spec
 				if err := json.Unmarshal(contents, &wo); err != nil {
-					Le(err)
+					le(err)
 					return err
 				}
 
 				if err := sendMaster(wo); err != nil {
-					Le(err)
+					le(err)
 					return err
 				}
 
 				if err := deleteLocal(wo.Completed); err != nil {
-					Le(err)
+					le(err)
 					return err
 				}
 
@@ -118,13 +118,13 @@ func ReSend() {
 				return nil
 
 			}); err != nil {
-			Le(err)
+			le(err)
 		}
 	}
 }
 
 func sendMaster(wo Spec) error {
-	Ld("in sendMaster")
+	ld("in sendMaster")
 	m, err := json.Marshal(wo)
 	if err != nil {
 		return err
@@ -155,7 +155,7 @@ func sendMaster(wo Spec) error {
 }
 
 func writeDB(wo Spec) error {
-	Ld("in writeDB")
+	ld("in writeDB")
 
 	key := wo.Id
 	value, err := json.Marshal(wo)

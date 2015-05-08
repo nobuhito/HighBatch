@@ -15,15 +15,15 @@ import (
 var zipfile string
 var changeDate string
 
-func StartWatcher() {
-	Ld("in tartWatcher")
+func startWatcher() {
+	ld("in tartWatcher")
 	zipfile = strings.Join([]string{"static", "file", "tasks.zip"}, string(os.PathSeparator))
 	checkTasks()
 	watchTasks()
 }
 
 func checkTasks() {
-	Ld("in checkTasks")
+	ld("in checkTasks")
 	if _, err := os.Stat(zipfile); err != nil {
 		doZip("tasks", zipfile)
 	}
@@ -33,11 +33,11 @@ func checkTasks() {
 }
 
 func watchTasks() {
-	Ld("in watchTasks")
+	ld("in watchTasks")
 	watcher, err := fsnotify.NewWatcher()
 	defer watcher.Close()
 	if err != nil {
-		Le(err)
+		le(err)
 	}
 
 	done := make(chan bool)
@@ -45,13 +45,13 @@ func watchTasks() {
 		for {
 			select {
 			case event := <-watcher.Events:
-				Li(fmt.Sprint(event))
-				Ld("tasks change")
+				li(fmt.Sprint(event))
+				ld("tasks change")
 				doZip("tasks", zipfile)
 				info, _ := os.Stat(zipfile)
 				changeDate = info.ModTime().Format("20060102150405")
 			case err := <-watcher.Errors:
-				Le(err)
+				le(err)
 			}
 		}
 	}()
@@ -61,27 +61,27 @@ func watchTasks() {
 
 			if info.IsDir() {
 				if err := watcher.Add(path); err != nil {
-					Le(err)
+					le(err)
 				}
 			}
 
 			return nil
 		}); err != nil {
-		Le(err)
+		le(err)
 	}
 
 	<-done
 }
 
 func doUnzip(path string) {
-	Ld("in doUnzip")
+	ld("in doUnzip")
 	if err := os.RemoveAll("tasks"); err != nil {
-		Le(err)
+		le(err)
 	}
 	reader, err := zip.OpenReader(path)
 	defer reader.Close()
 	if err != nil {
-		Le(err)
+		le(err)
 	}
 
 	var rc io.ReadCloser
@@ -89,12 +89,12 @@ func doUnzip(path string) {
 		rc, err = f.Open()
 		defer rc.Close()
 		if err != nil {
-			Le(err)
+			le(err)
 		}
 
 		buf := new(bytes.Buffer)
 		if _, err := io.Copy(buf, rc); err != nil {
-			Le(err)
+			le(err)
 		}
 
 		s := f.Name
@@ -104,16 +104,16 @@ func doUnzip(path string) {
 		}
 
 		if err := ioutil.WriteFile(s, buf.Bytes(), 0755); err != nil {
-			Le(err)
+			le(err)
 		}
 	}
 }
 
 func doZip(archivePath string, zipPath string) {
-	Ld("in doZIP")
+	ld("in doZIP")
 	file, err := os.Create(zipfile)
 	if err != nil {
-		Le(err)
+		le(err)
 	}
 	defer file.Close()
 
@@ -125,28 +125,28 @@ func doZip(archivePath string, zipPath string) {
 			if info.IsDir() {
 				return nil
 			}
-			Li(fmt.Sprint(path))
+			li(fmt.Sprint(path))
 			body, err := ioutil.ReadFile(path)
 			if err != nil {
-				Le(err)
+				le(err)
 				return err
 			}
 
 			if body != nil {
 				f, err := zw.Create(path)
 				if err != nil {
-					Le(err)
+					le(err)
 					return err
 				}
 
 				if _, err := f.Write(body); err != nil {
-					Le(err)
+					le(err)
 					return err
 				}
 			}
 
 			return nil
 		}); err != nil {
-		Le(err)
+		le(err)
 	}
 }

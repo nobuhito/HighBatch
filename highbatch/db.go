@@ -37,10 +37,10 @@ func (w workerOuts) Less(i, j int) bool {
 const dbname = "HighBatch.db"
 const bucketname = "hibhbatch"
 
-func Initdb() {
+func initdb() {
 	db, err := bolt.Open(dbname, 0600, nil)
 	if err != nil {
-		Le(err)
+		le(err)
 	}
 	defer db.Close()
 
@@ -48,15 +48,15 @@ func Initdb() {
 		_, err := tx.CreateBucketIfNotExists([]byte(bucketname))
 		return err
 	}); err != nil {
-		Le(err)
+		le(err)
 	}
 }
 
 func store(key string, value []byte) error {
-	Ld("in Store")
+	ld("in Store")
 	db, err := bolt.Open(dbname, 0600, nil)
 	if err != nil {
-		Le(err)
+		le(err)
 	}
 	defer db.Close()
 
@@ -67,18 +67,18 @@ func store(key string, value []byte) error {
 		}
 		return nil
 	}); err != nil {
-		Le(err)
+		le(err)
 		return err
 	}
 	return nil
 }
 
 func getOne(id string) Spec {
-	Ld("in GetOne")
+	ld("in GetOne")
 	var spec Spec
 	db, err := bolt.Open(dbname, 0600, nil)
 	if err != nil {
-		Le(err)
+		le(err)
 		}
 	defer db.Close()
 
@@ -86,7 +86,7 @@ func getOne(id string) Spec {
 		b := tx.Bucket([]byte(bucketname))
 		v := b.Get([]byte(id))
 		if err := json.Unmarshal(v, &spec); err != nil {
-			Le(err)
+			le(err)
 		}
 		return nil
 	})
@@ -95,18 +95,18 @@ func getOne(id string) Spec {
 }
 
 func getLists(f filter) workerOuts {
-	Ld("in GetLists")
+	ld("in GetLists")
 	var wos workerOuts
 	db, err := bolt.Open(dbname, 0600, nil)
 	if err != nil {
-		Le(err)
+		le(err)
 		}
 	defer db.Close()
 
 	reg := "^\\d{4}\\d{2}\\d{2}\\d{2}\\d{2}\\d{2}$"
 	isMatch, err := regexp.MatchString(reg, f.start)
 	if err != nil {
-		Le(err)
+		le(err)
 	}
 
 	span := 30 										// 初期値は30日分
@@ -117,7 +117,7 @@ func getLists(f filter) workerOuts {
 		for k, v := c.Last(); k != nil; k, v = c.Prev() {
 			var wo Spec
 			if err := json.Unmarshal(v, &wo); err != nil {
-				Le(err)
+				le(err)
 			}
 
 			isMatch = true
@@ -151,10 +151,10 @@ func getLists(f filter) workerOuts {
 }
 
 func dump(num int) (kvs KeyValues) {
-	Ld("in Dump")
+	ld("in Dump")
 	db, err := bolt.Open(dbname, 0600, nil)
 	if err != nil {
-		Le(err)
+		le(err)
 	}
 	defer db.Close()
 

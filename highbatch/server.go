@@ -44,18 +44,18 @@ func mainHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 
 }
 
-func StartWebserver() {
+func startWebserver() {
 
 	if _, err := os.Stat("log"); err != nil {
 		if err := os.Mkdir("log", 0666); err != nil {
-			Le(err)
-			Lw("can't create log directory")
+			le(err)
+			lw("can't create log directory")
 		}
 	}
 	f, err := os.OpenFile("log/goji.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
-		Le(err)
-		Lw("can't create log file")
+		le(err)
+		lw("can't create log file")
 	}
 
 	logger := logrus.Logger{
@@ -75,7 +75,7 @@ func sourceHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	file := strings.Join([]string{"tasks", c.URLParams["name"], c.URLParams["file"]}, string(os.PathSeparator))
 	body, err := ioutil.ReadFile(file)
 	if err != nil {
-		Le(err)
+		le(err)
 	}
 
 	var f []byte
@@ -133,7 +133,7 @@ func rootHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 func loggerHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	var wo Spec
 	if err := json.NewDecoder(r.Body).Decode(&wo); err != nil {
-		Le(err)
+		le(err)
 		return
 	}
 
@@ -181,7 +181,7 @@ func resolveHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	spec := getOne(c.URLParams["id"])
 	spec.Resolved = time.Now().Format("20060102150405")
 	if err := writeDB(spec); err != nil {
-		Le(err)
+		le(err)
 	}
 	http.Redirect(w, r, "/", 301)
 
@@ -191,7 +191,7 @@ func workerHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	// var wi WorkerIn
 	var s Spec
 	if err := json.NewDecoder(r.Body).Decode(&s); err != nil {
-		Le(err)
+		le(err)
 		return
 	}
 

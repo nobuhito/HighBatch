@@ -30,10 +30,10 @@ type MasterConfig struct {
 	Port     string
 }
 
-func LoadConfig() (c Config) {
-	Ld("in LoadConfig")
+func loadConfig() (c Config) {
+	ld("in LoadConfig")
 	if _, err := toml.DecodeFile("config.toml", &Conf); err != nil {
-		Le(err)
+		le(err)
 	}
 	c = Conf
 	return
