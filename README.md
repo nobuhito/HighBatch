@@ -10,23 +10,31 @@ HighBatch はバッチ処理をスケジューリングするシステムです�
 - シンプルな作り
 - サーバー毎、タスク毎に実行履歴を表示
 - 日時指定起動や間隔指定起動、順番を指定した起動をサポート
-- 正常終了以外の場合にメールで通知
-- 管理画面からのタスク起動
-- サーバーとクライアントの通信はJSONでのHTTP通信
-- 記録のみ用にWebhookでの登録も可能
+- 管理画面からのタスク再実行
+- サーバー（Master)とクライアント（Worker）の通信はJSONでのHTTP通信
+- 記録のみ用にWebhookでの登録も可能（未実装）
+- 正常終了以外の場合にメールで通知（未実装）
 
 ## 構成
 
-HighBatchは以下のコンポーネントからなる。
+HighBatchはWorkerを管理するMasterとTaskを実行するWorkerで構成されています。
+指定した時間になるとMasterからWorkerにTask起動の指示が出され、指示を出されたWorkerが実行結果をMasterに返答する作りです。
 
-- Arranger: スケジュールを管理
-- Walker: 実際にタスクを実行
-- Logger: スケジュール結果を保存
-- Reporter: WebUIによる履歴表示
-- Notifier: メール等による通知
+MasterとWorkerは以下のコンポーネントからなる。
 
-管理サーバーとタスク実行クライアントでは共にHTTPサーバーが起動しており、
-RESTによりタスクの実行や結果の報告が行われる。
+- 共通
+  - server: MasterとWorker間の通信の制御とユーザーとHighBatchの対話を提供
+  - logger: 実行したTaskの結果を管理
+  - configer: 設定等を管理
+
+- Master
+  - arranger: taskの起動を制御
+  - notifier: メール等による通知
+
+- Worker
+  - worker: Materからの指示によりTaskを実行
+
+管理サーバーとタスク実行クライアントでは共にHTTPサーバーが起動しており、互いにHTTP通信でタスクの指示や結果の報告が行われる。
 
 ## 動作概要
 

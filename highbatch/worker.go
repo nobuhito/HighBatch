@@ -17,16 +17,6 @@ import (
 	"time"
 )
 
-
-type WorkerInfo struct {
-	Host string `json:"host"`
-	Port string `json:"port"`
-	Datetime time.Time `json:"dt"`
-	IsAlive int `json:"isAlive"`
-}
-
-type WorkersInfo []WorkerInfo
-
 func startWorker() {
 	ld("in StartWorker")
 	refleshTasks()

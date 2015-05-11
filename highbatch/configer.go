@@ -3,6 +3,7 @@ package highbatch
 import (
 	"archive/zip"
 	"bytes"
+	"github.com/BurntSushi/toml"
 	"github.com/go-fsnotify/fsnotify"
 	"io"
 	"io/ioutil"
@@ -13,6 +14,74 @@ import (
 
 var zipfile string
 var changeDate string
+
+var Conf Config
+
+type Config struct {
+	Master MasterConfig
+	Worker WorkerConfig
+}
+
+type MasterConfig struct {
+	Host string
+	Port string
+}
+
+type WorkerConfig struct {
+	Host     string
+	Port     string
+	LogLevel int
+	IsMaster bool
+}
+
+type WorkerInfo struct {
+	Host     string    `json:"host"`
+	Port     string    `json:"port"`
+	Datetime time.Time `json:"dt"`
+	IsAlive  int       `json:"isAlive"`
+}
+
+type Spec struct {
+	Id          string   `json:"id"`
+	Key         string   `json:"key"`
+	Name        string   `json:"name"`
+	Description string   `json:"description"`
+	Cmd         string   `json:"cmd"`
+	Schedule    string   `json:"schedule"`
+	Route       []string `json:"route"`
+	Chain       []string `json:"chain"`
+	Error       string   `json:"error"`
+	OnErrorStop string   `json:"onErrorStop"`
+	Group       string   `json:"group"`
+	Assets      []string `json:"assets"`
+
+	Machine []string `json:"machine"`
+	Tags    []string `json:"tags"`
+
+	Hostname    string `json:"hostname"`
+	Started     string `json:"started"`
+	Completed   string `json:"completed"`
+	Duration    string `json:"duration"`
+	ExitCode    int    `json:"exitCode"`
+	Output      string `json:"output"`
+	DurationInt string `json:"durationInt"`
+	Resolved    string `json:"resolved"`
+}
+
+type WorkersInfo []WorkerInfo
+
+func loadConfig() (c Config) {
+	if _, err := toml.DecodeFile("config.toml", &Conf); err != nil {
+		le(err)
+	}
+	c = Conf
+
+	if os.Getenv("HighBatchIsMaster") != "" {
+		c.Worker.IsMaster = true
+	}
+
+	return
+}
 
 func startWatcher() {
 	ld("in tartWatcher")
