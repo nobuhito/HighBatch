@@ -1,9 +1,9 @@
-[server]
-name = "Master"
+[Master]
+  Host = "highbatch"
+  Port = "8081"
 
-[client]
-tag = ["master"]
-
-[client.master]
-hostname = "highbatch"
-port = "8081"
+[Worker]
+  Host = "highbatch"
+  Port = "8081"
+  LogLevel = 0
+  IsMaster = true
