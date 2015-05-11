@@ -35,6 +35,7 @@ func route(m *web.Mux) {
 	m.Get("/data/:machine/:task", dataHandler)
 	m.Get("/data/:machine", dataHandler)
 	m.Get("/data", dataHandler)
+	m.Get("/conf", confHandler)
 	m.Get("/source/:name/:file", sourceHandler)
 	m.Get("/", http.FileServer(http.Dir("public")))
 
@@ -104,6 +105,12 @@ func sourceHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Fprintf(w, string(f))
+}
+
+func confHandler(c web.C, w http.ResponseWriter, r *http.Request) {
+	j, _ := json.Marshal(Conf)
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	fmt.Fprintf(w, string(j))
 }
 
 func dataHandler(c web.C, w http.ResponseWriter, r *http.Request) {
