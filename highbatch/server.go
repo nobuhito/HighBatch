@@ -142,6 +142,10 @@ func loggerHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if wo.ExitCode != 0 {
+		notify(wo)
+	}
+
 	taskChain(wo)
 
 	j, _ := json.Marshal(wo)

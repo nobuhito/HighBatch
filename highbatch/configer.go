@@ -26,6 +26,12 @@ var Conf Config
 type Config struct {
 	Master MasterConfig
 	Worker WorkerConfig
+	Notify NotifyConfig
+}
+
+type ConfigClient struct {
+	Master MasterConfig
+	Worker WorkerConfig
 }
 
 type MasterConfig struct {
@@ -38,6 +44,23 @@ type WorkerConfig struct {
 	Port     string
 	LogLevel int
 	IsMaster bool
+}
+
+type NotifyConfig struct {
+	SmtpAuth SmtpAuth
+	MailInfo MailInfo
+}
+
+type MailInfo struct {
+	FromAddress string
+	ToAddress   []string
+	Host string
+	Port string
+}
+
+type SmtpAuth struct {
+	User string
+	Pass string
 }
 
 type WorkerInfo struct {

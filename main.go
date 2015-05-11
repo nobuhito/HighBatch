@@ -73,7 +73,7 @@ func bootCheck() bool {
 			fmt.Println(err)
 		}
 
-		var config highbatch.Config
+		var config highbatch.ConfigClient
 
 		config.Master.Host = "highbatch"
 		config.Master.Port = "8081"
