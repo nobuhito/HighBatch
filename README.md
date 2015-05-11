@@ -38,22 +38,25 @@ MasterとWorkerは以下のコンポーネントからなる。
 
 ## 動作概要
 
-1. Walkerが起動すると1分毎にArrangerへデータを送りHTTP経由で生存の確認が行われる。
-1. Arranger生存の確認が出来たWalkerへスケジュールに合わせてHTTP経由でタスク実行を指示。
-1. 指示を受けたWalkerは外部コマンド起動でタスクを実行し、終了するまで定期的にArrangerへHTTP経由でデータを送信。
-1. 外部コマンドが終了したらWalkerはLoggerへ結果を出力。
-1. 結果を受け取ったLoggerはテンポラリファイルへ結果を書き込む。
-1. テンポラリファイルへ結果を書き込み終わったLoggerはテンポラリファイルの全てをArrangerへHTTP経由でデータ送信。
-1. Arrangerでタスク実行中の定期的な通信を受け取れない時は異常終了としてLoggerへ結果を出力。
-1. 結果を受け取ったArrangerはLoggerへ結果を出力。
-1. 結果を受け取ったLoggerは結果をチェックして異常終了があればメールを送信
-1. 結果をチェックしたLoggerはDBへ結果を保存。
+1. Walkerが起動すると1分毎にMasterへデータを送りHTTP経由で生存の確認が行われる
+1. Arrangerは生存の確認が出来たWalkerへスケジュールに合わせてHTTP経由でタスク実行を指示
+1. 指示を受けたWalkerは外部コマンド起動でタスクを実行し、Logger経由でデータを保存
+
+![sequence](doc/sequence.png)
 
 ## 利用しているOSS
 
-- Golang
-- Goji
-- jQuery
-- Bootstrap
-- HighlightJs
-- TreeView
+- [Golang][https://golang.org/]
+- [bolt][https://github.com/boltdb/bolt] (A low-level key/value database for Go.)
+- [cron][https://github.com/robfig/cron] (a cron library for go)
+- [fsnotify][https://github.com/go-fsnotify/fsnotify] (File system notifications for Go.)
+- [Goji][https://github.com/zenazn/goji] (Goji is a minimalistic web framework for Golang that's high in antioxidants.)
+- [service][https://github.com/kardianos/service] (Run go programs as a service on major platforms.)
+- [toml][https://github.com/BurntSushi/toml] (TOML parser for Golang with reflection.)
+- [jQuery][https://jquery.com/]
+- [Bootstrap][http://getbootstrap.com/]
+- [TreeView][https://github.com/jonmiles/bootstrap-treeview] (Tree View for Twitter Bootstrap)
+- [highlight.js][https://highlightjs.org/] (Syntax highlighting for the Web)
+
+
+
