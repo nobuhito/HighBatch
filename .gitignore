@@ -4,6 +4,7 @@ temp
 static/file/*
 /config.toml
 /HighBatch.db
+!.gitkeep
 
 /tasks/*
 !/tasks/*Sample*
