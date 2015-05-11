@@ -46,17 +46,17 @@ MasterとWorkerは以下のコンポーネントからなる。
 
 ## 利用しているOSS
 
-- [Golang][https://golang.org/]
-- [bolt][https://github.com/boltdb/bolt] (A low-level key/value database for Go.)
-- [cron][https://github.com/robfig/cron] (a cron library for go)
-- [fsnotify][https://github.com/go-fsnotify/fsnotify] (File system notifications for Go.)
-- [Goji][https://github.com/zenazn/goji] (Goji is a minimalistic web framework for Golang that's high in antioxidants.)
-- [service][https://github.com/kardianos/service] (Run go programs as a service on major platforms.)
-- [toml][https://github.com/BurntSushi/toml] (TOML parser for Golang with reflection.)
-- [jQuery][https://jquery.com/]
-- [Bootstrap][http://getbootstrap.com/]
-- [TreeView][https://github.com/jonmiles/bootstrap-treeview] (Tree View for Twitter Bootstrap)
-- [highlight.js][https://highlightjs.org/] (Syntax highlighting for the Web)
+- [Golang](https://golang.org/)
+- [bolt](https://github.com/boltdb/bolt) (A low-level key/value database for Go.)
+- [cron](https://github.com/robfig/cron) (a cron library for go)
+- [fsnotify](https://github.com/go-fsnotify/fsnotify) (File system notifications for Go.)
+- [Goji](https://github.com/zenazn/goji) (Goji is a minimalistic web framework for Golang that's high in antioxidants.)
+- [service](https://github.com/kardianos/service) (Run go programs as a service on major platforms.)
+- [toml](https://github.com/BurntSushi/toml) (TOML parser for Golang with reflection.)
+- [jQuery](https://jquery.com/)
+- [Bootstrap](http://getbootstrap.com/)
+- [TreeView](https://github.com/jonmiles/bootstrap-treeview) (Tree View for Twitter Bootstrap)
+- [highlight.js](https://highlightjs.org/) (Syntax highlighting for the Web)
 
 
 
