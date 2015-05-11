@@ -5,7 +5,6 @@ import (
 	"golang.org/x/text/encoding/japanese"
 	"golang.org/x/text/transform"
 	"io"
-	"io/ioutil"
 	"math/rand"
 	"net/http"
 	"os"
@@ -21,36 +20,6 @@ func startWorker() {
 	ld("in StartWorker")
 	refleshTasks()
 	sendKeepalive()
-}
-
-func refleshTasks() {
-	ld("in refleshTasks")
-	if err := getTasks(); err != nil {
-		le(err)
-	} else if !Conf.Worker.IsMaster { // Master以外のとき
-		doUnzip("tasks.zip")
-	}
-}
-
-func getTasks() error {
-	ld("in getTasks")
-	url := "http://" + Conf.Master.Host + ":" + Conf.Master.Port + "/file/tasks.zip"
-	resp, err := http.Get(url)
-	if err != nil {
-		le(err)
-		return err
-	} else {
-
-		defer resp.Body.Close()
-		file, err := os.OpenFile("tasks.zip", os.O_CREATE|os.O_WRONLY, 0644)
-		defer file.Close()
-		if err != nil {
-			le(err)
-		}
-
-		io.Copy(file, resp.Body)
-		return nil
-	}
 }
 
 func sendKeepalive() {
@@ -75,15 +44,40 @@ func sendKeepalive() {
 	}
 }
 
-func getData(url string) (string, error) {
-	ld("in getData")
-	response, err := http.Get(url)
+func refleshTasks() {
+	ld("in refleshTasks")
+
+	err := getTasks()
 	if err != nil {
-		return "", err
+		le(err)
 	}
-	defer response.Body.Close()
-	b, _ := ioutil.ReadAll(response.Body)
-	return string(b), nil
+
+	if !Conf.Worker.IsMaster { // Master以外のとき
+		doUnzip("tasks.zip")
+	}
+}
+
+func getTasks() error {
+	ld("in getTasks")
+	url := "http://" + Conf.Master.Host + ":" + Conf.Master.Port + "/file/tasks.zip"
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	file, err := os.OpenFile("tasks.zip", os.O_CREATE|os.O_WRONLY, 0644)
+	defer file.Close()
+	if err != nil {
+		return err
+	}
+
+	_, err = io.Copy(file, resp.Body)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func worker(wo Spec) {

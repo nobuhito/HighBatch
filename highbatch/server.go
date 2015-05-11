@@ -1,7 +1,6 @@
 package highbatch
 
 import (
-	"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -11,8 +10,6 @@ import (
 	"github.com/zenazn/goji"
 	"github.com/zenazn/goji/web"
 	"github.com/zenazn/goji/web/middleware"
-	"golang.org/x/net/html/charset"
-	"golang.org/x/text/transform"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -83,35 +80,12 @@ func startWebserver() {
 
 func sourceHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	file := strings.Join([]string{"tasks", c.URLParams["name"], c.URLParams["file"]}, string(os.PathSeparator))
-	body, err := ioutil.ReadFile(file)
+	source, err := readAssets(file)
 	if err != nil {
 		le(err)
 	}
 
-	var f []byte
-	encodings := []string{"sjis", "utf-8"}
-	for _, enc := range encodings {
-		if enc != "" {
-			ee, _ := charset.Lookup(enc)
-			if ee == nil {
-				continue
-			}
-			var buf bytes.Buffer
-			ic := transform.NewWriter(&buf, ee.NewDecoder())
-			_, err := ic.Write(body)
-			if err != nil {
-				continue
-			}
-			err = ic.Close()
-			if err != nil {
-				continue
-			}
-			f = buf.Bytes()
-			break
-		}
-	}
-
-	fmt.Fprintf(w, string(f))
+	fmt.Fprintf(w, source)
 }
 
 func confHandler(c web.C, w http.ResponseWriter, r *http.Request) {
@@ -168,15 +142,7 @@ func loggerHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if wo.OnErrorStop == "" || wo.ExitCode == 0 {
-		for i := range wo.Chain {
-			file := strings.Join([]string{"tasks", wo.Chain[i], "spec.toml"}, string(os.PathSeparator))
-			chainSpec := parseSpec(file)
-			chainSpec.Route = wo.Route
-			chainSpec.Route = append(chainSpec.Route, wo.Name)
-			sendWorker(chainSpec)
-		}
-	}
+	taskChain(wo)
 
 	j, _ := json.Marshal(wo)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
@@ -313,22 +279,7 @@ func ServiceInit() {
 	}
 
 	if len(os.Args) > 1 {
-		fmt.Println(len(os.Args))
-		verb := os.Args[1]
-		switch verb {
-		case "install":
-			err = s.Install()
-			if err != nil {
-				fmt.Printf("Failed to install %s\n", err)
-				return
-			}
-		case "uninstall":
-			err = s.Uninstall()
-			if err != nil {
-				fmt.Printf("Faild to uninstall %s\n", err)
-				return
-			}
-		}
+		serviceRegist(s)
 		return
 	}
 
@@ -338,6 +289,25 @@ func ServiceInit() {
 		logger.Error(err)
 	}
 
+}
+
+func serviceRegist(s service.Service) {
+	verb := os.Args[1]
+	switch verb {
+	case "install":
+		err := s.Install()
+		if err != nil {
+			fmt.Printf("Failed to install %s\n", err)
+			return
+		}
+	case "uninstall":
+		err := s.Uninstall()
+		if err != nil {
+			fmt.Printf("Faild to uninstall %s\n", err)
+			return
+		}
+	}
+	return
 }
 
 func logInit(l int) {
@@ -375,4 +345,15 @@ func lw(msg string) {
 
 func le(err error) {
 	logger.Error(err)
+}
+
+func getData(url string) (string, error) {
+	ld("in getData")
+	response, err := http.Get(url)
+	if err != nil {
+		return "", err
+	}
+	defer response.Body.Close()
+	b, _ := ioutil.ReadAll(response.Body)
+	return string(b), nil
 }

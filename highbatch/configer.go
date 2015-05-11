@@ -3,13 +3,19 @@ package highbatch
 import (
 	"archive/zip"
 	"bytes"
+	"crypto/md5"
+	"encoding/hex"
 	"github.com/BurntSushi/toml"
 	"github.com/go-fsnotify/fsnotify"
+	"golang.org/x/net/html/charset"
+	"golang.org/x/text/transform"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
+	"time"
 )
 
 var zipfile string
@@ -215,4 +221,133 @@ func doZip(archivePath string, zipPath string) {
 		}); err != nil {
 		le(err)
 	}
+}
+
+func copyAsset(path string, copyTo string) error {
+	copyToParent := strings.Join([]string{"public", "tasks"}, string(os.PathSeparator))
+
+	if _, err := os.Stat(copyToParent); err != nil {
+		if err := os.Mkdir(copyToParent, 0777); err != nil {
+			return err
+		}
+	}
+
+	src, err := os.Open(path)
+	defer src.Close()
+	if err != nil {
+		le(err)
+		return err
+	}
+
+	dst, err := os.Create(copyToParent + copyTo)
+	if err != nil {
+		le(err)
+		return err
+	}
+
+	if _, err := io.Copy(dst, src); err != nil {
+		le(err)
+		return err
+	}
+	return nil
+}
+
+func taskFileSerch() (specs []Spec) {
+	ld("in taskFileSerch")
+	root := "tasks"
+
+	if err := filepath.Walk(root,
+		func(path string, info os.FileInfo, err error) error {
+
+			isMatch, err := regexp.MatchString("\\.toml$", path)
+			if err != nil {
+				return err
+			}
+
+			if info.IsDir() || !isMatch {
+				return nil
+			}
+
+			spec := parseSpec(path)
+			specs = append(specs, spec)
+
+			return nil
+
+		}); err != nil {
+		le(err)
+	}
+	return
+}
+
+func readAssets(task string) (asset string, err error) {
+	body, err := ioutil.ReadFile(task)
+	if err != nil {
+		return "", err
+	}
+
+	var f []byte
+	encodings := []string{"sjis", "utf-8"}
+	for _, enc := range encodings {
+		if enc != "" {
+			ee, _ := charset.Lookup(enc)
+			if ee == nil {
+				continue
+			}
+			var buf bytes.Buffer
+			ic := transform.NewWriter(&buf, ee.NewDecoder())
+			_, err := ic.Write(body)
+			if err != nil {
+				continue
+			}
+			err = ic.Close()
+			if err != nil {
+				continue
+			}
+			f = buf.Bytes()
+			break
+		}
+	}
+	return string(f), nil
+}
+
+func findAssets(task string) (assets []string) {
+	ld("in findAssets")
+	if err := filepath.Walk(task,
+		func(path string, info os.FileInfo, err error) error {
+			isMatch, err := regexp.MatchString("\\.toml$", path)
+			if err != nil {
+				return err
+			}
+
+			if info.IsDir() {
+				return nil
+			}
+
+			if !isMatch {
+				file := strings.Split(path, string(os.PathSeparator))[2]
+				assets = append(assets, file)
+				return nil
+			}
+
+			return nil
+		}); err != nil {
+		le(err)
+	}
+	return assets
+}
+
+func parseSpec(path string) (s Spec) {
+	ld("in parseSpec")
+
+	if _, err := toml.DecodeFile(path, &s); err != nil {
+		le(err)
+	}
+
+	name := strings.Split(path, string(os.PathSeparator))[1]
+	key := md5.Sum([]byte(name))
+	s.Key = hex.EncodeToString(key[:])
+	s.Name = name
+	s.Assets = findAssets(strings.Join([]string{"tasks", name}, string(os.PathSeparator)))
+
+	return s
 }

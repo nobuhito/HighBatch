@@ -104,29 +104,24 @@ func reSend() {
 				file := strings.Split(path, string(os.PathSeparator))[1]
 				isMatch, err := regexp.MatchString("^\\d{15}$", file)
 				if err != nil || !isMatch {
-					le(err)
 					return err
 				}
 
 				contents, err := ioutil.ReadFile(path)
 				if err != nil {
-					le(err)
 					return err
 				}
 
 				var wo Spec
 				if err := json.Unmarshal(contents, &wo); err != nil {
-					le(err)
 					return err
 				}
 
 				if err := sendMaster(wo); err != nil {
-					le(err)
 					return err
 				}
 
 				if err := deleteLocal(wo.Completed); err != nil {
-					le(err)
 					return err
 				}
 
@@ -329,23 +324,11 @@ func getSpecList(bucketname string, f filter) workerOuts {
 				le(err)
 			}
 
-			isMatch = true
-
 			if f.start == "" && wo.Started[0:14] < since {
 				break
 			}
 
-			if f.start != "" && f.start != wo.Started[0:14] {
-				isMatch = false
-			}
-
-			if f.machine != "" && f.machine != wo.Hostname {
-				isMatch = false
-			}
-
-			if f.task != "" && f.task != wo.Key {
-				isMatch = false
-			}
+			isMatch = filterCheck(f, wo)
 
 			if isMatch {
 				wos = append(wos, wo)
@@ -357,6 +340,24 @@ func getSpecList(bucketname string, f filter) workerOuts {
 
 	sort.Sort(sort.Reverse(wos))
 	return wos
+}
+
+func filterCheck(f filter, wo Spec) (isMatch bool) {
+	isMatch = true
+
+	if f.start != "" && f.start != wo.Started[0:14] {
+		isMatch = false
+	}
+
+	if f.machine != "" && f.machine != wo.Hostname {
+		isMatch = false
+	}
+
+	if f.task != "" && f.task != wo.Key {
+		isMatch = false
+	}
+
+	return isMatch
 }
 
 func dump(bucketname string, num int) (kvs KeyValues) {
