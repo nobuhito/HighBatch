@@ -119,9 +119,11 @@
                                            .appendTo(navTabs);
          var outputStr = d["output"];
          if (d["error"] != "") {
-             var re = new RegExp(d["error"], "gi");
-             var replace = "<span class=\"bg-danger text-danger\">$1</span>";
-             outputStr = d["output"].trim().replace(re, replace);
+             var re = new RegExp("(" + d["error"] + ")", "gim");
+             outputStr = d["output"].replace(re, function(match, p1, offset, string) {
+                 console.log(match);
+                 return "<span class=\"bg-danger text-danger\">" + match + "</span>";
+             }).trim();
          }
          var output = $("<pre>").addClass("console").html(outputStr);
          var tabPaneActive = $("<div>").addClass("tab-pane active")
