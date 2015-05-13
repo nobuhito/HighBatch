@@ -114,7 +114,7 @@ func loadConfig() (c Config) {
 
 func startWatcher() {
 	ld("in tartWatcher")
-	zipfile = strings.Join([]string{"static", "file", "tasks.zip"}, string(os.PathSeparator))
+	zipfile = strings.Join([]string{"public", "static", "file", "tasks.zip"}, string(os.PathSeparator))
 	checkTasks()
 	watchTasks()
 }
