@@ -89,9 +89,7 @@ func worker(wo Spec) {
 
 	startTime := time.Now()
 
-	if runtime.GOOS == "windows" {
-		wo.ExitCode, wo.Output = executeWinCmd(wo.Name, cmd)
-	}
+	wo.ExitCode, wo.Output = executeCmd(wo.Name, cmd)
 
 	if wo.Error != "" {
 		isMatch, err := regexp.MatchString(wo.Error, wo.Output)
@@ -111,13 +109,20 @@ func worker(wo Spec) {
 	go write(wo)
 }
 
-func executeWinCmd(path string, cmdSlice []string) (exitCode int, output string) {
-	ld("in executeWinCmd")
+func executeCmd(path string, cmdSlice []string) (exitCode int, output string) {
+	ld("in executeCmd")
 
-	winbatchSlice := []string{"/c", "call"}
-	jobSlice := append(winbatchSlice, cmdSlice...)
+	shell := ""
+	if runtime.GOOS == "windows" {
+		shell = "cmd"
+		winbatchSlice := []string{"/c", "call"}
+		cmdSlice = append(winbatchSlice, cmdSlice...)
+	} else {
+		shell = "/bin/sh"
+		cmdSlice = append(cmdSlice, "-xe")
+	}
 
-	cmd := exec.Command("cmd", jobSlice...)
+	cmd := exec.Command(shell, cmdSlice...)
 	cmd.Dir = strings.Join([]string{"tasks", path}, string(os.PathSeparator))
 
 	ret, err := cmd.CombinedOutput()
@@ -131,7 +136,9 @@ func executeWinCmd(path string, cmdSlice []string) (exitCode int, output string)
 		}
 	}
 
-	ret, _, err = transform.Bytes(japanese.ShiftJIS.NewDecoder(), ret)
+	if runtime.GOOS == "windows" {
+		ret, _, err = transform.Bytes(japanese.ShiftJIS.NewDecoder(), ret)
+	}
 	output = string(ret)
 
 	return exitCode, output
