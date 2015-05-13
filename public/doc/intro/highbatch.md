@@ -6,7 +6,7 @@ https://github.com/nobuhito/HighBatch
 
 ---
 
-![highbatch_main](img/highbatch_main.png)
+![highbatch_main](img/highbatch_main_1.png)
 
 
 ---
