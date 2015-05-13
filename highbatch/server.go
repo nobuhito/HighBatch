@@ -45,6 +45,9 @@ func route(m *web.Mux) {
 
 	staticPattern := regexp.MustCompile("^/(css|js|img|file)")
 	goji.Handle(staticPattern, http.FileServer(http.Dir("public/static")))
+
+	docPattern := regexp.MustCompile("^/(doc)")
+	goji.Handle(docPattern, http.FileServer(http.Dir("public")))
 }
 
 func mainHandler(c web.C, w http.ResponseWriter, r *http.Request) {
