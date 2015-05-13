@@ -154,7 +154,6 @@ func sendMaster(wo Spec) error {
 	}
 
 	resp, err := client.Do(req)
-	defer resp.Body.Close()
 	if err != nil {
 		return err
 	}

@@ -24,6 +24,7 @@ func startWorker() {
 
 func sendKeepalive() {
 	ld("in sendKeepalive")
+	errorCount := 0
 	for {
 		time.Sleep(60 * time.Second)
 		m := Conf.Master
@@ -31,16 +32,19 @@ func sendKeepalive() {
 		url := fmt.Sprintf("http://%s:%s/ka/%s/%s", m.Host, m.Port, w.Host, w.Port)
 		re, err := getData(url)
 		if err != nil {
-			le(err)
+			if errorCount % 10 == 0 { // エラーは10分に一回程度
+				le(err)
+			}
+			errorCount += 1
+		} else {
+			info, _ := os.Stat("tasks.zip")
+			downloadedDate := info.ModTime().Format("20060102150405")
+			uploadedDate := strings.Replace(re, "\"", "", 2)
+			if uploadedDate > downloadedDate {
+				refleshTasks()
+			}
+			errorCount = 0
 		}
-
-		info, _ := os.Stat("tasks.zip")
-		downloadedDate := info.ModTime().Format("20060102150405")
-		uploadedDate := strings.Replace(re, "\"", "", 2)
-		if uploadedDate > downloadedDate {
-			refleshTasks()
-		}
-
 	}
 }
 

@@ -17,6 +17,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"errors"
 )
 
 type program struct{}
@@ -356,11 +357,21 @@ func le(err error) {
 
 func getData(url string) (string, error) {
 	ld("in getData")
-	response, err := http.Get(url)
+	timeout := time.Duration(3 * time.Second)
+	client := http.Client{
+		Timeout: timeout,
+	}
+	response, err := client.Get(url)
 	if err != nil {
 		return "", err
 	}
-	defer response.Body.Close()
+
+	if response.StatusCode != 200 {
+		err := errors.New("HTTP Status code error")
+		return "", err
+	}
+
 	b, _ := ioutil.ReadAll(response.Body)
+	defer response.Body.Close()
 	return string(b), nil
 }
