@@ -44,7 +44,7 @@ MasterとWorkerは以下のコンポーネントからなる。
 1. Arrangerは生存の確認が出来たWalkerへスケジュールに合わせてHTTP経由でタスク実行を指示
 1. 指示を受けたWalkerは外部コマンド起動でタスクを実行し、Logger経由でデータを保存
 
-![sequence](doc/sequence.png)
+![sequence](https://raw.githubusercontent.com/nobuhito/HighBatch/master/public/doc/intro/img/sequence.png)
 
 ## 利用しているOSS
 

@@ -129,7 +129,7 @@ Taskの指示と実行結果の保存管理を主に担当
 
 ---
 
-![sequence](https://raw.githubusercontent.com/nobuhito/HighBatch/master/doc/sequence.png)
+![sequence](img/sequence.png)
 
 ---
 
@@ -179,7 +179,7 @@ config.toml
 
 下記が表示されたらMasterのインストールは完了
 
-![master_install](https://raw.githubusercontent.com/nobuhito/HighBatch/master/doc/install_master_1.png)
+![master_install](img/install_master_1.png)
 
 ---
 
@@ -214,7 +214,7 @@ config.toml
 
 下記が表示されたらWorkerのインストールは完了
 
-![worker_install](https://raw.githubusercontent.com/nobuhito/HighBatch/master/doc/install_worker_1.png)
+![worker_install](img/install_worker_1.png)
 
 ---
 
@@ -237,7 +237,7 @@ daemontoolsとかいろいろあるでしょ？
 
 起動後はWorkerが定期的にMasterと通信を開始
 
-![check_config](https://raw.githubusercontent.com/nobuhito/HighBatch/master/doc/check_config_1.png)
+![check_config](img/check_config_1.png)
 
 ---
 
