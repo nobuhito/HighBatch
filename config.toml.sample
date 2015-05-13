@@ -7,3 +7,9 @@
   Port = "8081"
   LogLevel = 0
   IsMaster = true
+
+[notify.mailInfo]
+  fromAddress = "from@example.com"
+  toAddress = ["to@example.com"]
+  host = "example.com"
+  port = "25"
