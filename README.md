@@ -14,8 +14,14 @@ HighBatch はバッチ処理をスケジューリングするシステムです�
 - 日時指定起動や間隔指定起動、順番を指定した起動をサポート
 - 管理画面からのタスク再実行
 - サーバー（Master)とクライアント（Worker）の通信はJSONでのHTTP通信
+- 正常終了以外の場合にメールで通知
 - 記録のみ用にWebhookでの登録も可能（未実装）
-- 正常終了以外の場合にメールで通知（未実装）
+
+![main](https://raw.githubusercontent.com/nobuhito/HighBatch/master/public/doc/intro/img/highbatch_main_1.png)
+
+## 概要
+
+[HighBatchとは？](https://github.com/nobuhito/HighBatch/raw/master/public/doc/intro/highbatch.pdf)
 
 ## 構成
 
