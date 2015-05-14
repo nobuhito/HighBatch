@@ -81,7 +81,7 @@ func startWebserver() {
 	goji.Use(glogrus.NewGlogrus(&logger, "HighBatch"))
 	goji.Abandon(middleware.Logger)
 
-	flag.Set("bind", ":8081")
+	flag.Set("bind", ":" + Conf.Worker.Port)
 	route(goji.DefaultMux)
 	goji.Serve()
 }
