@@ -207,7 +207,7 @@
                  }
              }
              if (j == "schedule") {
-                 if (s != "manual") {
+                 if (s != "Manual" && s != "WebHook") {
                      var jwd = ["日", "月", "火", "水", "木", "金", "土"]
                      var c = s.split(" ");
                      c.reverse();
@@ -230,15 +230,17 @@
              var tabPanel = getTabPanel(d);
              panelBody.append(tabPanel);
 
-             panelBody.append(
-                 $("<a>").addClass("execute btn btn-danger")
-                         .attr("href", "/exec/" + d["key"])
-                         .text("ReExecute")
-                         .prepend(
-                             $("<span>").addClass("glyphicon glyphicon-flash")
-                                        .attr("aria-hidden", "true")
-                         )
-             );
+             if (d["schedule"] != "WebHook") {
+                 panelBody.append(
+                     $("<a>").addClass("execute btn btn-danger")
+                             .attr("href", "/exec/" + d["key"])
+                             .text("ReExecute")
+                             .prepend(
+                                 $("<span>").addClass("glyphicon glyphicon-flash")
+                                            .attr("aria-hidden", "true")
+                             )
+                 );
+             }
 
              if (d["exitCode"] != 0 && d["resolved"] == "") {
                  panelBody.append(

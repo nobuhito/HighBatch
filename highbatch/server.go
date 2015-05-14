@@ -18,6 +18,9 @@ import (
 	"strings"
 	"time"
 	"errors"
+	"math/rand"
+	"crypto/md5"
+	"encoding/hex"
 )
 
 type program struct{}
@@ -42,6 +45,7 @@ func route(m *web.Mux) {
 	m.Get("/data", dataHandler)
 	m.Get("/conf", confHandler)
 	m.Get("/source/:name/:file", sourceHandler)
+	m.Post("/webhook", webhookHnadler)
 	m.Get("/", http.FileServer(http.Dir("public")))
 
 	staticPattern := regexp.MustCompile("^/(css|js|img|file)")
@@ -132,6 +136,54 @@ func kaHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 func rootHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 }
 
+func webhookHnadler(c web.C, w http.ResponseWriter, r *http.Request) {
+
+	var spec Spec
+	if err := json.NewDecoder(r.Body).Decode(&spec); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		le(err)
+		return
+	}
+
+	if spec.Name == "" {
+		http.Error(w, "Job name required.", http.StatusInternalServerError)
+		return
+	}
+
+	spec.Schedule = "WebHook"
+	spec.Assets = nil
+	spec.Route = []string{}
+	if spec.Completed == "" {
+		spec.Completed = fmt.Sprint(time.Now().Format("20060102150405"), rand.Intn(9))
+	}
+	if spec.Started == "" {
+		spec.Started = fmt.Sprint(time.Now().Format("20060102150405"), rand.Intn(9))
+
+	}
+	if spec.Hostname == "" {
+		spec.Hostname = strings.Split(r.Host, ":")[0]
+	}
+
+	key := md5.Sum([]byte(spec.Name))
+	spec.Key = hex.EncodeToString(key[:])
+	spec.Id = spec.Started + "_" + spec.Hostname + "_" + spec.Key
+
+	if err := writeDB(spec); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if spec.ExitCode != 0 {
+		notify(spec)
+	}
+
+	taskChain(spec)
+
+	j, _ := json.Marshal(spec)
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	fmt.Fprint(w, string(j))
+}
+
 func loggerHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	var wo Spec
 	if err := json.NewDecoder(r.Body).Decode(&wo); err != nil {
@@ -163,7 +215,7 @@ func execHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	for i := range specs {
 		spec := specs[i]
 		if spec.Key == c.URLParams["key"] {
-			spec.Schedule = "manual"
+			spec.Schedule = "Manual"
 			sendWorker(spec)
 			break
 		}
