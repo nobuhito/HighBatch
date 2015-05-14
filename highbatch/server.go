@@ -1,7 +1,10 @@
 package highbatch
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"github.com/Sirupsen/logrus"
@@ -11,16 +14,13 @@ import (
 	"github.com/zenazn/goji/web"
 	"github.com/zenazn/goji/web/middleware"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
 	"os"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
-	"errors"
-	"math/rand"
-	"crypto/md5"
-	"encoding/hex"
 )
 
 type program struct{}

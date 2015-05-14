@@ -54,8 +54,8 @@ type NotifyConfig struct {
 type MailInfo struct {
 	FromAddress string
 	ToAddress   []string
-	Host string
-	Port string
+	Host        string
+	Port        string
 }
 
 type SmtpAuth struct {

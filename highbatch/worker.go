@@ -32,7 +32,7 @@ func sendKeepalive() {
 		url := fmt.Sprintf("http://%s:%s/ka/%s/%s", m.Host, m.Port, w.Host, w.Port)
 		re, err := getData(url)
 		if err != nil {
-			if errorCount % 10 == 0 { // エラーは10分に一回程度
+			if errorCount%10 == 0 { // エラーは10分に一回程度
 				le(err)
 			}
 			errorCount += 1
