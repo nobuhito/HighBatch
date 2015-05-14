@@ -41,10 +41,10 @@ go build main.go
 
 ### Worker
 
-1. Windows用にビルドしたExeファイルを任意のフォルダにコピー
-1. ダブルクリックして一回起動
-1. config.tomlができるのでUTF8を解釈できるエディタで編集
-1. ダブルクリックして再度起動
+1. ターゲットOS用にビルドした実行ファイルを任意の場所にコピー
+1. そのまま一回起動
+1. 実行ファイルと同じ場所にconfig.tomlができるのでUTF8を解釈できるエディタで編集
+1. 再度起動
 
 *See [more infomation (in Japanese)](http://www.slideshare.net/NobuhitoSato/highbatch/26)*
 
