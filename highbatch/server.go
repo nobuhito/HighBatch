@@ -43,10 +43,11 @@ func route(m *web.Mux) {
 	m.Get("/data/:machine/:task", dataHandler)
 	m.Get("/data/:machine", dataHandler)
 	m.Get("/data", dataHandler)
+	m.Get("/conf/data", confDataHandler)
 	m.Get("/conf", confHandler)
 	m.Get("/source/:name/:file", sourceHandler)
 	m.Post("/webhook", webhookHnadler)
-	m.Get("/", http.FileServer(http.Dir("public")))
+	m.Get("/", mainHandler)
 
 	staticPattern := regexp.MustCompile("^/(css|js|img|file)")
 	goji.Handle(staticPattern, http.FileServer(http.Dir("public/static")))
@@ -56,7 +57,11 @@ func route(m *web.Mux) {
 }
 
 func mainHandler(c web.C, w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, getHtml("index()"))
+}
 
+func confHandler(c web.C, w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, getHtml("conf()"))
 }
 
 func startWebserver() {
@@ -96,7 +101,7 @@ func sourceHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, source)
 }
 
-func confHandler(c web.C, w http.ResponseWriter, r *http.Request) {
+func confDataHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	j, _ := json.Marshal(Conf)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	fmt.Fprintf(w, string(j))

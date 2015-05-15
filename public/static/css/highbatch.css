@@ -1,0 +1,25 @@
+body {
+    padding-top: 70px;
+}
+.btn {
+    margin-left: 5px;
+}
+.glyphicon {
+    margin-right: 2px;
+}
+.resolve {
+    float: right;
+}
+.execute {
+    float: right;
+}
+pre.console {
+    background: #3f3f3f;
+    color: #dcdcdc;
+}
+.list-group-item {
+    padding: 5px 15px;
+}
+th {
+    width: 150px;
+}
