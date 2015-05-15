@@ -45,6 +45,8 @@ func route(m *web.Mux) {
 	m.Get("/data", dataHandler)
 	m.Get("/conf/data", confDataHandler)
 	m.Get("/conf", confHandler)
+	m.Get("/tasks/data", tasksDataHandler)
+	m.Get("/tasks", tasksHandler)
 	m.Get("/source/:name/:file", sourceHandler)
 	m.Post("/webhook", webhookHnadler)
 	m.Get("/", mainHandler)
@@ -62,6 +64,10 @@ func mainHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 
 func confHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, getHtml("conf()"))
+}
+
+func tasksHandler(c web.C, w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, getHtml("tasks()"))
 }
 
 func startWebserver() {
@@ -103,6 +109,13 @@ func sourceHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 
 func confDataHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	j, _ := json.Marshal(Conf)
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	fmt.Fprintf(w, string(j))
+}
+
+func tasksDataHandler(c web.C, w http.ResponseWriter, r *http.Request) {
+	specs := taskFileSerch()
+	j, _ := json.Marshal(specs)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	fmt.Fprintf(w, string(j))
 }

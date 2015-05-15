@@ -394,24 +394,41 @@ function load(path, bothTree) {
     });
 }
 
+function tasks() {
+    $("#nav_tasks").addClass("active");
+    $.ajax({
+        url: "/tasks/data",
+        cache: false
+    }).done( function(data) {
+        $("#main").html(jsonToTable(data));
+    });
+}
+
 function conf() {
     $("#nav_conf").addClass("active");
     $.ajax({
         url: "/conf/data",
         cache: false
     }).done( function(data) {
-        $("#main").html(dl(data));
+        $("#main").html(jsonToTable(data, true));
     });
 }
 
-function dl(obj) {
+function jsonToTable(obj, isPrintNull) {
+    if (isPrintNull == null || isPrintNull == undefined) isPrintNull = false;
     var table = $("<table>").addClass("table table-condensed");
     for (var i in obj) {
+    	  if (!isPrintNull) {
+            if (obj[i] == "" ||
+                obj[i] == undefined ||
+                (typeof obj[i] == "object" && Object.keys(obj[i]).length == undefined)) {
+                continue;
+            }
+        }
         var tr = $("<tr>");
         tr.append($("<th>").text(i));
-        console.log(typeof obj[i]);
         if (typeof obj[i] == "object") {
-            tr.append(dl(obj[i]));
+            tr.append(jsonToTable(obj[i], isPrintNull));
         } else {
             tr.append($("<td>").text(obj[i]));
         }
@@ -420,7 +437,6 @@ function dl(obj) {
     return table;
 }
 
-// $(function($){
 function index() {
     load("/data", true);
 
@@ -446,5 +462,3 @@ function index() {
         });
     });
 }
-
-// });
