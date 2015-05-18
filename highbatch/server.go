@@ -21,6 +21,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"io"
 )
 
 type program struct{}
@@ -49,6 +50,8 @@ func route(m *web.Mux) {
 	m.Get("/tasks", tasksHandler)
 	m.Get("/source/:name/:file", sourceHandler)
 	m.Post("/webhook", webhookHnadler)
+	m.Get("/task",taskHandler)
+	m.Post("/task", taskPostHandler)
 	m.Get("/", mainHandler)
 
 	staticPattern := regexp.MustCompile("^/(css|js|img|file)")
@@ -68,6 +71,62 @@ func confHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 
 func tasksHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, getHtml("tasks()"))
+}
+
+func taskHandler(c web.C, w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, getHtml("task()"))
+}
+
+func taskPostHandler(c web.C, w http.ResponseWriter, r *http.Request) {
+	r.ParseMultipartForm(32 <<20)
+	formdata := r.MultipartForm
+
+	name := formdata.Value["Name"][0]
+	chain := ""
+	if len(strings.Split(formdata.Value["Chain"][0], ":")) > 1 {
+		chain = strings.TrimSpace(strings.Split(formdata.Value["Chain"][0], ":")[1])
+	}
+	if formdata.Value["OnErrorStop"][0] == "off" {
+		formdata.Value["OnErrorStop"][0] = ""
+	}
+
+	spec := Spec{
+		Name: name,
+		Description: formdata.Value["Description"][0],
+		Cmd: formdata.Value["Cmd"][0],
+		Schedule: formdata.Value["Schedule"][0],
+		Chain: []string{chain},
+		Error: formdata.Value["Error"][0],
+		OnErrorStop: formdata.Value["OnErrorStop"][0],
+	}
+
+	if err := writeSpec(spec); err != nil {
+		le(err)
+	} else {
+
+		files := formdata.File["Assets"]
+		for i, _ := range files {
+			file, err := files[i].Open()
+			defer file.Close()
+			if err != nil {
+				fmt.Fprintln(w, err)
+				return
+			}
+
+			paths := []string{"tasks", name, files[i].Filename}
+			path := strings.Join(paths, string(os.PathSeparator))
+			f, err := os.Create(path)
+			if err != nil {
+				fmt.Println(err)
+			}
+			defer f.Close()
+			_, err = io.Copy(f, file)
+			if err != nil {
+				fmt.Fprintln(w, err)
+				return
+			}
+		}
+	}
 }
 
 func startWebserver() {

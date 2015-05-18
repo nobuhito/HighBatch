@@ -340,7 +340,7 @@ function load(path, bothTree) {
         cache: false
     }).done( function(data) {
 
-        var durationTable = {}
+        var durationTable = {};
         for (i in data) {
             var d = data[i];
 
@@ -392,6 +392,307 @@ function load(path, bothTree) {
 
         $(".collapse").collapse('hide');
     });
+}
+
+var items = [
+    {
+        name: "Name",
+        placeholder: "タスクの名前",
+        type: "text",
+        key: true
+
+    },
+    {
+        name: "Description",
+        placeholder: "タスクの詳細等",
+        type: "textarea"
+    },
+    {
+        name: "Cmd",
+        placeholder: "実行するコマンド",
+        type: "text"
+    },
+    {
+        name: "Schedule",
+        placeholder: "実行するスケジュール ( Cron方式で 秒 分 時 日 月 曜日 )",
+        type: "text"
+    },
+    {
+        name: "Chain",
+        placeholder: "次に登録するタスク",
+        type: "select",
+        func: function() {
+            $.ajax({
+                url:"/tasks/data"
+            }).done(function(data) {
+                for (var i in data) {
+                    $("#form_Chain").append($("<option>").text(i + ": " + data[i].name));
+                }
+            });
+        }
+    },
+    {
+        name: "Error",
+        placeholder: "異常終了と判定する正規表現",
+        type: "text"
+    },
+    {
+        name: "OnErrorStop",
+        type: "bool",
+        label: "異常終了の時は次に進めずにストップする"
+    },
+    {
+        name: "Assets",
+        type: "file",
+        label: "バッチファイルやSQLファイルなど"
+    }
+];
+
+function getSpecInput() {
+
+    var form = $("<form>").addClass("form-horizontal");
+    for (var i in items) {
+        var grp = $("<div>").addClass("form-group");
+        var label = $("<label>").addClass("col-sm-3 control-label");
+        label.attr("for", "form_" + items[i].name).text(items[i].name).appendTo(grp);
+        var type = items[i].type;
+        if (type == "text") {
+            var input = $("<input>").addClass("form-control");
+            input
+                .attr({
+                    type: items[i].type,
+                    id: "form_" + items[i].name,
+                    placeholder: items[i].placeholder
+                });
+            if (!items[i].key) {
+                input.attr("disabled", "disabled");
+            } else {
+                setTimeout(function(id) {
+                    $("#"+id).on("keyup", function() {
+                        if ($("#"+id).val().length > 0) {
+                            enableAll();
+                        } else {
+                            disableAll();
+                        }
+                    });
+                }, 1000, "form_" + items[i].name);
+            }
+            input.appendTo($("<div>").addClass("col-sm-9").appendTo(grp));
+        } else if (type == "textarea") {
+            var textarea = $("<textarea>").addClass("form-control");
+            textarea
+                .attr({
+                    rows: (items[i].rows || 1),
+                    disabled: "disabled",
+                    id: "form_" + items[i].name,
+                    placeholder: items[i].placeholder
+                })
+                .appendTo($("<div>").addClass("col-sm-9").appendTo(grp));
+        } else if (type == "select") {
+            var select = $("<select>").addClass("form-control");
+            select
+                .attr({
+                    id: "form_" + items[i].name,
+                    disabled: "disabled"
+                })
+                .append($("<option>").append("選択▼ (複数指定する場合はspec.tomlを直接編集してください)"))
+                .appendTo($("<div>").addClass("col-sm-9").appendTo(grp));
+        } else if (type == "bool") {
+        	  var check = $("<input>");
+        	  check
+        		    .attr({
+        			      type: "checkbox",
+                    disabled: "disabled",
+        			      id: "form_" + items[i].name
+        		    })
+        		    .appendTo($("<div>").addClass("col-sm-9").appendTo(grp).css("padding-top", 7))
+        		    .parent().append($("<span>").text(items[i].label).css("padding-left", "3px"));
+        } else if (type== "file") {
+
+            var drag_outer = $("<div>").addClass("col-sm-9");
+            drag_outer
+                .attr("id", "file_form_" + items[i].name)
+                .appendTo(grp);
+        }
+        grp.appendTo(form);
+    }
+
+    form.append($("<hr>"));
+
+    form.append(
+        $("<div>").addClass("form-group")
+            .append($("<div>").addClass("col-sm-offset-3 col-sm-9")
+                    .append($("<button>").addClass("btn btn-primary")
+                            .attr({
+                                id: "addTaskButton",
+                                type: "button",
+                                "data-loading-text": "Send data..."
+                            })
+                            .text("Add tasks")
+                           )
+                   )
+    );
+    setTimeout(function() {
+        $("#addTaskButton").on("click", function() {
+            postTask();
+        });
+    }, 1000);
+
+    // http://qiita.com/emadurandal/items/37fae542938907ef5d0c
+    Function.prototype.toJSON = Function.prototype.toString;
+    var jsonText = JSON.stringify(items);
+    var parser = function(k,v){
+        return v.toString().indexOf('function') === 0 ? eval('('+v+')') : v;
+    };
+    var funcJson = JSON.parse(jsonText, parser);
+    for (var i in funcJson) {
+        if (funcJson[i].func != undefined) {
+            funcJson[i].func();
+        }
+    }
+
+    return $("<div>").append(form);
+
+}
+
+function enableAll() {
+    for (var i in items) {
+        if (items[i].type == 'file') {
+            if ($("#file_form_"+items[i].name).html() == "") {
+                enableUplaod(items[i]);
+            }
+        } else {
+            $("#form_" + items[i].name).prop("disabled", false);
+        }
+    }
+}
+
+function disableAll() {
+    for (var i in items) {
+        if (items[i].type == 'file') {
+            disableUpload(items[i]);
+        } else {
+            if (!items[i].key) {
+                $("#form_" + items[i].name).prop("disabled", true);
+            }
+        }
+    }
+}
+
+function disableUpload(item) {
+    $("#file_form_"+item.name).html("");
+}
+
+function enableUplaod(item) {
+    console.log(item);
+
+    var drag = $("<div>")
+            .attr("id", "form_" + item.name);
+    drag
+        .addClass("drag")
+        .append($("<p>")
+                .text("アップロードするファイルをドロップ または")
+               );
+
+    var uploadBtn =$("<button>");
+    uploadBtn
+        .attr("id", "uploadBtn")
+        .text("ファイルを選択")
+        .change(function() {
+            var files = this.files;
+            addFiles(files);
+        });
+    var btnGrp = $("<span>").addClass("btn-group");
+    btnGrp
+        .append($("<input>")
+                .attr({
+                    type: "file",
+                    name: "uploadfile"
+                }).attr("multiple", "multiple"))
+        .append(uploadBtn)
+        .click(function() {
+            $("#uploadBtn").click();
+        })
+        .appendTo(drag);
+    drag.appendTo($("#file_form_"+item.name));
+    setTimeout(function(item) {
+        setupDragDrop(item);
+    }, 100, item);
+}
+
+function setupDragDrop(item) {
+    var elm = $("#form_" + item.name);
+    elm
+        .on("drop", function(e) {
+            e.preventDefault();
+            var files = e.originalEvent.dataTransfer.files;
+            addFiles(files, item);
+        })
+        .on("dragenter", function(e) {
+            e.stopPropagation();
+            e.preventDefault();
+            elm.addClass("bg-info");
+        })
+        .on("dragover", function(e) {
+            e.stopPropagation();
+            e.preventDefault();
+        });
+    $(document)
+        .on("drop", function(e) {
+            e.stopPropagation();
+            e.preventDefault();
+        })
+        .on("dragenter", function(e) {
+            e.stopPropagation();
+            e.preventDefault();
+        })
+        .on("dragover", function(e) {
+            e.stopPropagation();
+            e.preventDefault();
+            elm.removeClass("bg-info");
+        });
+}
+
+var fd = new FormData();
+function addFiles(files, item) {
+    var elm = $("#form_" + item.name);
+    var filesLen = files.length;
+    for (var i = 0; i < filesLen; i++) {
+        fd.append(item.name, files[i]);
+        elm.parent().append($("<div>").text(files[i].name));
+    }
+    elm.removeClass("bg-info");
+}
+
+function postTask() {
+    var btn =$("#addTaskButton").button("loading");
+    for (var i in items) {
+        var item = items[i];
+        var id = "#form_" + item.name;
+        if (item.type == 'file') { continue; }
+        var data = $("#form_" + item.name).val();
+        if (item.type == "bool") {
+            data = ($(id).prop('checked'))? "on": "off";
+        }
+        fd.append(item.name, data);
+    }
+
+    $.ajax({
+        url: "/task",
+        type: "POST",
+        data: fd,
+        cache: false,
+        processData: false,
+        contentType: false
+    }).done(function(data) {
+        btn.button("reset");
+    });
+}
+
+function task() {
+    form = getSpecInput();
+    $("#main").html(form.html());
+
 }
 
 function tasks() {

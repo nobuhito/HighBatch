@@ -53,6 +53,14 @@ const html = `
                         </a>
                     </li>
                 </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    <li id="addTask">
+                        <a href="/task">
+                            <span class="glyphicon glyphicon-plus"></span>
+                            Add Task
+                        </a>
+                    </li>
+                </ul>
             </div>
         </div>
     </nav>

@@ -374,3 +374,23 @@ func parseSpec(path string) (s Spec) {
 
 	return s
 }
+
+func writeSpec(spec Spec) error {
+	path := strings.Join([]string{"tasks", spec.Name}, string(os.PathSeparator))
+	if _, err := os.Stat(path); err != nil {
+		if err := os.Mkdir(path, 0666); err != nil {
+			return err
+		}
+	}
+
+  buf := new(bytes.Buffer)
+	if err := toml.NewEncoder(buf).Encode(spec); err != nil {
+		return err
+	}
+
+	file := strings.Join([]string{path, "spec.toml"}, string(os.PathSeparator))
+	if err := ioutil.WriteFile(file, buf.Bytes(), 0666); err != nil {
+		return err
+	}
+	return nil
+}
