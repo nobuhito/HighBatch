@@ -715,6 +715,16 @@ function conf() {
     });
 }
 
+function workers() {
+    $("#nav_workers").addClass("active");
+    $.ajax({
+        url: "/workers/data",
+        cache: false
+    }).done( function(data) {
+        $("#main").html(jsonToTable(data, true));
+    });
+}
+
 function jsonToTable(obj, isPrintNull) {
     if (isPrintNull == null || isPrintNull == undefined) isPrintNull = false;
     var table = $("<table>").addClass("table table-condensed");

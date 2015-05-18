@@ -33,6 +33,7 @@ const html = `
                 <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-link">
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
                 </button>
                 <a class="navbar-brand" href="/">
                     HighBatch
@@ -50,6 +51,12 @@ const html = `
                         <a href="/conf">
                             <span class="glyphicon glyphicon-cog"></span>
                             Conf
+                        </a>
+                    </li>
+                    <li id="nav_workers">
+                        <a href="/workers">
+                            <span class="glyphicon glyphicon-tasks"></span>
+                            Workers
                         </a>
                     </li>
                 </ul>
