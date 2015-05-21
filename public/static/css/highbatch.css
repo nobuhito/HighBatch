@@ -29,3 +29,10 @@ input[type="file"] {
 .drag {
     padding: 20px;
 }
+dd {
+    font-family: monospace;
+}
+.permalink {
+    margin-top: 18px;
+    margin-left: 20px;
+}

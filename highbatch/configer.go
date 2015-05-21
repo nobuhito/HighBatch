@@ -73,16 +73,16 @@ type WorkerInfo struct {
 type Spec struct {
 	Id          string   `json:"id"`
 	Key         string   `json:"key"`
-	Name        string   `json:"name"`
-	Description string   `json:"description"`
-	Cmd         string   `json:"cmd"`
-	Schedule    string   `json:"schedule"`
+	Name        string   `json:"name" elm:"text" desc:"タスクの名前" key:"true"`
+	Description string   `json:"description" elm:"textarea" desc:"タスクの詳細"`
+	Cmd         string   `json:"cmd" elm:"text" desc:"実行するコマンド"`
+	Schedule    string   `json:"schedule" elm:"text" desc:"実行するスケジュール ( Cron方式で 秒 分 時 日 月 曜日 )"`
 	Route       []string `json:"route"`
-	Chain       []string `json:"chain"`
-	Error       string   `json:"error"`
-	OnErrorStop string   `json:"onErrorStop"`
+	Chain       []string `json:"chain" elm:"select" desc:"次に実行するタスク" url:"/tasks/data"`
+	Error       string   `json:"error" elm:"text" desc:"異常終了と判定する正規表現"`
+	OnErrorStop string   `json:"onErrorStop" elm:"bool" desc:"異常終了の時は次に進めずにストップする"`
 	Group       string   `json:"group"`
-	Assets      []string `json:"assets"`
+	Assets      []string `json:"assets" elm:"file" desc:"バッチファイルやSQL等"`
 
 	Machine []string `json:"machine"`
 	Tags    []string `json:"tags"`

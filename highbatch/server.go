@@ -54,6 +54,8 @@ func route(m *web.Mux) {
 	m.Post("/webhook", webhookHnadler)
 	m.Get("/task",taskHandler)
 	m.Post("/task", taskPostHandler)
+	m.Get("/id/:id", idHandler)
+	m.Get("/id/data/:id", dataIdHander)
 	m.Get("/", mainHandler)
 
 	staticPattern := regexp.MustCompile("^/(css|js|img|file)")
@@ -63,24 +65,28 @@ func route(m *web.Mux) {
 	goji.Handle(docPattern, http.FileServer(http.Dir("public")))
 }
 
+func idHandler(c web.C, w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, getHtml("MainPage", fmt.Sprintf("permalinkPage(\"%s\")", c.URLParams["id"])))
+}
+
 func mainHandler(c web.C, w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, getHtml("index()"))
+	fmt.Fprintf(w, getHtml("MainPage", "index()"))
 }
 
 func confHandler(c web.C, w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, getHtml("conf()"))
+	fmt.Fprintf(w, getHtml("ConfPage", "conf()"))
 }
 
 func tasksHandler(c web.C, w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, getHtml("tasks()"))
+	fmt.Fprintf(w, getHtml("TasksPage", "tasks()"))
 }
 
 func workersHandler(c web.C, w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, getHtml("workers()"))
+	fmt.Fprintf(w, getHtml("WorkersPage", "workers()"))
 }
 
 func taskHandler(c web.C, w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, getHtml("task()"))
+	fmt.Fprintf(w, getHtml("AddTaskPage", ""))
 }
 
 func taskPostHandler(c web.C, w http.ResponseWriter, r *http.Request) {
@@ -181,6 +187,13 @@ func confDataHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 func tasksDataHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	specs := taskFileSerch()
 	j, _ := json.Marshal(specs)
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	fmt.Fprintf(w, string(j))
+}
+
+func dataIdHander(c web.C, w http.ResponseWriter, r *http.Request) {
+	fmt.Println(c.URLParams["id"])
+	j, _ := json.Marshal(getSpec("highbatch", c.URLParams["id"]))
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	fmt.Fprintf(w, string(j))
 }

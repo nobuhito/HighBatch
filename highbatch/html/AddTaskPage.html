@@ -1,0 +1,93 @@
+<form class="form-horizontal">
+    {{range .}}
+    <div class="form-group">
+        <label class="col-sm-3 control-label" for="form_{{.Name}}">
+            {{.Name}}
+        </label>
+        <div class="col-sm-9">
+            {{if eq .Elm "text"}}
+            <input class="form-control"
+                   type="{{.Elm}}"
+                   id="form_{{.Name}}"
+                   placeholder="{{.Desc}}"
+                   {{if ne .Key ""}}key="key"{{end}}
+                   {{if eq .Key ""}}disabled="disabled"{{end}}>
+            <script>
+             $("#form_{{.Name}}").on("keyup", function() {
+                 if ($("#form_{{.Name}}").val().length > 0) {
+                     enableAll();
+                 } else {
+                     disableAll();
+                 }
+             });
+            </script>
+            {{end}}
+            {{if eq .Elm "textarea"}}
+            <textarea class="form-control"
+                      rows="3"
+                      disabled="disabled"
+                      id="form_{{.Name}}"
+                      placeholder="{{.Desc}}">
+            </textarea>
+            {{end}}
+            {{if eq .Elm "select"}}
+            <select class="form-control"
+                    id="form_{{.Name}}"
+                    disabled="disabled">
+                <option>
+                    選択▼ (複数指定する場合はspec.tomlを直接編集してください)
+                </option>
+            </select>
+            <script>
+             $.ajax({
+                 url: "{{.Url}}"
+             }).done(function(data) {
+                 for (var i in data) {
+                     $("#form_{{.Name}}").append(
+                         $("<option>").text(i + ": " + data[i].name)
+                     );
+                 }
+             });
+            </script>
+            {{end}}
+            {{if eq .Elm "bool"}}
+            <input type="checkbox"
+                   disabled="disabled"
+                   id="form_{{.Name}}">
+            <script>
+             $("#form_{{.Name}}").parent()
+                        .css("paddhing-top", 7)
+                        .append(
+                            $("<span>").text("{{.Desc}}")
+                                       .css("padding-left", "3px")
+                        );
+            </script>
+            {{end}}
+            {{if eq .Elm "file"}}
+            <span id="form_{{.Name}}"></span>
+            <script>
+             $("#form_{{.Name}}").parent()
+                        .attr("id", "file_form_{{.Name}}")
+                        .prop("disabled", true);
+            </script>
+            {{end}}
+        </div>
+    </div>
+    {{end}}
+    <hr>
+    <div class="form-group">
+        <div class="col-sm-offset-3 col-sm-9">
+            <buton class="btn btn-primary"
+                   id="addTaskButton"
+                   type="button"
+                   data-loading-text="Send data...">
+                Add tasks
+            </buton>
+            <script>
+             $("#addTaskButton").on("click", function() {
+                 postTask();
+             });
+            </script>
+        </div>
+    </div>
+</form>

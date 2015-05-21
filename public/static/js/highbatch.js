@@ -15,7 +15,7 @@ function getPanelHeading(d) {
             }));
     titleStr = $(titleAlert).html() + " " + titleStr;
     var title = $("<a>").html(titleStr)
-            .addClass("collapsed")
+            .addClass("collapsed accoudion-link")
             .attr({
                 "href": "#c-" + d["id"],
                 "data-toggle": "collapse",
@@ -154,7 +154,6 @@ function getPanelCollapse(d) {
                 s = s + c[3] + "時 " + c[4] + "分 " + c[5] + "秒";
             }
         }
-        s = "<span style=\"font-family:monospace\">" + s + "</span>";
         $("<dt>").text(j.toUpperCase()).appendTo(info);
         $("<dd>").html(s).appendTo(info);
     }
@@ -192,6 +191,18 @@ function getPanelCollapse(d) {
             );
 
         }
+
+        panelBody.append(
+            $("<div>").addClass("permalink")
+                .append(
+                    $("<a>").attr("href", "/id/"+d["id"])
+                        .text("LINK")
+                        .prepend(
+                            $("<span>").addClass("glyphicon glyphicon-link")
+                                .attr("aria-hidden", "true")
+                        )
+                )
+        );
     } else {
         var progress = $("<div>").addClass("progress");
         var v = getProgresValue(d["durationAve"], d["started"]);
@@ -316,16 +327,17 @@ function doTreeview(tree) {
     });
 }
 
-function render(d) {
+function render(d, cb) {
     var panelHeading = getPanelHeading(d);
     var panelCollapse = getPanelCollapse(d);
     var panel = $("<div>").addClass("panel panel-default")
             .append(panelHeading)
             .append(panelCollapse)
             .appendTo($("#accordion"));
+    cb();
 }
 
-function load(path, bothTree) {
+function load(path, bothTree, cb) {
     $("#article").html("");
     var panelGroup = $("<div>").addClass("panel-group")
             .attr({
@@ -339,38 +351,48 @@ function load(path, bothTree) {
         url: path,
         cache: false
     }).done( function(data) {
+        if (typeof data[0] == "undefined") {
+            var d = data;
+            data = new Array();
+            data.push(d);
+        }
 
         var durationTable = {};
-        for (i in data) {
-            var d = data[i];
+        if (bothTree == true) {
+            for (i in data) {
+                var d = data[i];
 
-            if (!(d["hostname"] + d["key"] in durationTable)) {
-                durationTable[d["hostname"] + d["key"]] = {
-                    count: 0,
-                    value: 0
-                };
-            }
-            var t = durationTable[d["hostname"] + d["key"]];
-            if (d["durationInt"] != 0) {
-                var  i = {
-                    count: parseInt(t.count) + 1,
-                    value: parseInt(t.value) + parseInt(d["durationInt"])
-                };
-                durationTable[d["hostname"] + d["key"]] = i;
+                if (!(d["hostname"] + d["key"] in durationTable)) {
+                    durationTable[d["hostname"] + d["key"]] = {
+                        count: 0,
+                        value: 0
+                    };
+                }
+                var t = durationTable[d["hostname"] + d["key"]];
+                if (d["durationInt"] != 0) {
+                    var  i = {
+                        count: parseInt(t.count) + 1,
+                        value: parseInt(t.value) + parseInt(d["durationInt"])
+                    };
+                    durationTable[d["hostname"] + d["key"]] = i;
+                }
             }
         }
 
         var items = {};
         for (i in data) {
             var d = data[i];
-            var t = durationTable[d["hostname"] + d["key"]];
-            if (t.count > 0) {
-                d.durationAve = (t.value / t.count);
-            }
 
-            setTimeout(render, 100, d);
+            setTimeout(function(d) {
+                render(d, cb);
+            }, 100, d);
 
             if (bothTree == true) {
+
+                var t = durationTable[d["hostname"] + d["key"]];
+                if (t.count > 0) {
+                    d.durationAve = (t.value / t.count);
+                }
                 var h = d["hostname"];
                 if (!(h in items)) { items[h] = {}; }
                 if (!(d["key"] in items[h])) { items[h][d["key"]] = {}; }
@@ -394,200 +416,45 @@ function load(path, bothTree) {
     });
 }
 
-var items = [
-    {
-        name: "Name",
-        placeholder: "タスクの名前",
-        type: "text",
-        key: true
-
-    },
-    {
-        name: "Description",
-        placeholder: "タスクの詳細等",
-        type: "textarea"
-    },
-    {
-        name: "Cmd",
-        placeholder: "実行するコマンド",
-        type: "text"
-    },
-    {
-        name: "Schedule",
-        placeholder: "実行するスケジュール ( Cron方式で 秒 分 時 日 月 曜日 )",
-        type: "text"
-    },
-    {
-        name: "Chain",
-        placeholder: "次に登録するタスク",
-        type: "select",
-        func: function() {
-            $.ajax({
-                url:"/tasks/data"
-            }).done(function(data) {
-                for (var i in data) {
-                    $("#form_Chain").append($("<option>").text(i + ": " + data[i].name));
-                }
-            });
-        }
-    },
-    {
-        name: "Error",
-        placeholder: "異常終了と判定する正規表現",
-        type: "text"
-    },
-    {
-        name: "OnErrorStop",
-        type: "bool",
-        label: "異常終了の時は次に進めずにストップする"
-    },
-    {
-        name: "Assets",
-        type: "file",
-        label: "バッチファイルやSQLファイルなど"
-    }
-];
-
-function getSpecInput() {
-
-    var form = $("<form>").addClass("form-horizontal");
-    for (var i in items) {
-        var grp = $("<div>").addClass("form-group");
-        var label = $("<label>").addClass("col-sm-3 control-label");
-        label.attr("for", "form_" + items[i].name).text(items[i].name).appendTo(grp);
-        var type = items[i].type;
-        if (type == "text") {
-            var input = $("<input>").addClass("form-control");
-            input
-                .attr({
-                    type: items[i].type,
-                    id: "form_" + items[i].name,
-                    placeholder: items[i].placeholder
-                });
-            if (!items[i].key) {
-                input.attr("disabled", "disabled");
-            } else {
-                setTimeout(function(id) {
-                    $("#"+id).on("keyup", function() {
-                        if ($("#"+id).val().length > 0) {
-                            enableAll();
-                        } else {
-                            disableAll();
-                        }
-                    });
-                }, 1000, "form_" + items[i].name);
-            }
-            input.appendTo($("<div>").addClass("col-sm-9").appendTo(grp));
-        } else if (type == "textarea") {
-            var textarea = $("<textarea>").addClass("form-control");
-            textarea
-                .attr({
-                    rows: (items[i].rows || 1),
-                    disabled: "disabled",
-                    id: "form_" + items[i].name,
-                    placeholder: items[i].placeholder
-                })
-                .appendTo($("<div>").addClass("col-sm-9").appendTo(grp));
-        } else if (type == "select") {
-            var select = $("<select>").addClass("form-control");
-            select
-                .attr({
-                    id: "form_" + items[i].name,
-                    disabled: "disabled"
-                })
-                .append($("<option>").append("選択▼ (複数指定する場合はspec.tomlを直接編集してください)"))
-                .appendTo($("<div>").addClass("col-sm-9").appendTo(grp));
-        } else if (type == "bool") {
-        	  var check = $("<input>");
-        	  check
-        		    .attr({
-        			      type: "checkbox",
-                    disabled: "disabled",
-        			      id: "form_" + items[i].name
-        		    })
-        		    .appendTo($("<div>").addClass("col-sm-9").appendTo(grp).css("padding-top", 7))
-        		    .parent().append($("<span>").text(items[i].label).css("padding-left", "3px"));
-        } else if (type== "file") {
-
-            var drag_outer = $("<div>").addClass("col-sm-9");
-            drag_outer
-                .attr("id", "file_form_" + items[i].name)
-                .appendTo(grp);
-        }
-        grp.appendTo(form);
-    }
-
-    form.append($("<hr>"));
-
-    form.append(
-        $("<div>").addClass("form-group")
-            .append($("<div>").addClass("col-sm-offset-3 col-sm-9")
-                    .append($("<button>").addClass("btn btn-primary")
-                            .attr({
-                                id: "addTaskButton",
-                                type: "button",
-                                "data-loading-text": "Send data..."
-                            })
-                            .text("Add tasks")
-                           )
-                   )
-    );
-    setTimeout(function() {
-        $("#addTaskButton").on("click", function() {
-            postTask();
-        });
-    }, 1000);
-
-    // http://qiita.com/emadurandal/items/37fae542938907ef5d0c
-    Function.prototype.toJSON = Function.prototype.toString;
-    var jsonText = JSON.stringify(items);
-    var parser = function(k,v){
-        return v.toString().indexOf('function') === 0 ? eval('('+v+')') : v;
-    };
-    var funcJson = JSON.parse(jsonText, parser);
-    for (var i in funcJson) {
-        if (funcJson[i].func != undefined) {
-            funcJson[i].func();
-        }
-    }
-
-    return $("<div>").append(form);
-
-}
 
 function enableAll() {
-    for (var i in items) {
-        if (items[i].type == 'file') {
-            if ($("#file_form_"+items[i].name).html() == "") {
-                enableUplaod(items[i]);
-            }
-        } else {
-            $("#form_" + items[i].name).prop("disabled", false);
+    $("[id^='form']").each(function(index, elm) {
+        $(elm).prop("disabled", false);
+    });
+
+    $("[id^='file_form']").each(function(index, elm) {
+        if ($(elm).prop("disabled")) {
+            var name = $(elm).attr("id").replace("file_form_", "");
+            enableUpload(name);
+            $(elm).prop("disabled", false);
         }
-    }
+    });
 }
 
 function disableAll() {
-    for (var i in items) {
-        if (items[i].type == 'file') {
-            disableUpload(items[i]);
-        } else {
-            if (!items[i].key) {
-                $("#form_" + items[i].name).prop("disabled", true);
-            }
+    $("[id^='form']").each(function(index, elm) {
+        if (!$(elm).attr("key")) {
+            $(elm).prop("disabled", true);
         }
-    }
+    });
+
+    $("[id^='file_form']").each(function(index, elm) {
+        if (!$(elm).prop("disabled")) {
+            var name = $(elm).attr("id").replace("file_form_", "");
+            disableUpload(name);
+            $(elm).prop("disabled", true);
+        }
+    });
 }
 
 function disableUpload(item) {
-    $("#file_form_"+item.name).html("");
+    $("#file_form_"+name).html("");
 }
 
-function enableUplaod(item) {
-    console.log(item);
+function enableUpload(name) {
 
     var drag = $("<div>")
-            .attr("id", "form_" + item.name);
+            .attr("id", "form_" + name);
     drag
         .addClass("drag")
         .append($("<p>")
@@ -614,19 +481,19 @@ function enableUplaod(item) {
             $("#uploadBtn").click();
         })
         .appendTo(drag);
-    drag.appendTo($("#file_form_"+item.name));
-    setTimeout(function(item) {
-        setupDragDrop(item);
-    }, 100, item);
+    drag.appendTo($("#file_form_"+name));
+    setTimeout(function(name) {
+        setupDragDrop(name);
+    }, 100, name);
 }
 
-function setupDragDrop(item) {
-    var elm = $("#form_" + item.name);
+function setupDragDrop(name) {
+    var elm = $("#form_" + name);
     elm
         .on("drop", function(e) {
             e.preventDefault();
             var files = e.originalEvent.dataTransfer.files;
-            addFiles(files, item);
+            addFiles(files, name);
         })
         .on("dragenter", function(e) {
             e.stopPropagation();
@@ -654,11 +521,11 @@ function setupDragDrop(item) {
 }
 
 var fd = new FormData();
-function addFiles(files, item) {
-    var elm = $("#form_" + item.name);
+function addFiles(files, name) {
+    var elm = $("#form_" + name);
     var filesLen = files.length;
     for (var i = 0; i < filesLen; i++) {
-        fd.append(item.name, files[i]);
+        fd.append(name, files[i]);
         elm.parent().append($("<div>").text(files[i].name));
     }
     elm.removeClass("bg-info");
@@ -687,12 +554,6 @@ function postTask() {
     }).done(function(data) {
         btn.button("reset");
     });
-}
-
-function task() {
-    form = getSpecInput();
-    $("#main").html(form.html());
-
 }
 
 function tasks() {
@@ -746,6 +607,16 @@ function jsonToTable(obj, isPrintNull) {
         tr.appendTo(table);
     }
     return table;
+}
+
+function permalinkPage(id) {
+    $("#article-wrap").removeClass("col-sm-8").addClass("col-sm-12");
+    $("#article-wrap").removeClass("col-sm-4");
+    load("/id/data/"+id, false, function()  {
+        $(".accoudion-link").each(function(e) {
+            $(this).click();
+        });
+    });
 }
 
 function index() {
