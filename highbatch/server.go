@@ -93,30 +93,31 @@ func taskPostHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	r.ParseMultipartForm(32 <<20)
 	formdata := r.MultipartForm
 
-	name := formdata.Value["Name"][0]
+	name := formdata.Value["name"][0]
 	chain := ""
-	if len(strings.Split(formdata.Value["Chain"][0], ":")) > 1 {
-		chain = strings.TrimSpace(strings.Split(formdata.Value["Chain"][0], ":")[1])
+	if len(strings.Split(formdata.Value["chain"][0], ":")) > 1 {
+		chain = strings.TrimSpace(strings.Split(formdata.Value["chain"][0], ":")[1])
 	}
-	if formdata.Value["OnErrorStop"][0] == "off" {
-		formdata.Value["OnErrorStop"][0] = ""
+	if formdata.Value["onerrorstop"][0] == "off" {
+		formdata.Value["onerrorstop"][0] = ""
 	}
 
 	spec := Spec{
 		Name: name,
-		Description: formdata.Value["Description"][0],
-		Cmd: formdata.Value["Cmd"][0],
-		Schedule: formdata.Value["Schedule"][0],
+		Description: formdata.Value["description"][0],
+		Cmd: formdata.Value["cmd"][0],
+		Schedule: formdata.Value["schedule"][0],
 		Chain: []string{chain},
-		Error: formdata.Value["Error"][0],
-		OnErrorStop: formdata.Value["OnErrorStop"][0],
+		Error: formdata.Value["error"][0],
+		OnErrorStop: formdata.Value["onerrorstop"][0],
+		Machine: []string{formdata.Value["machine"][0]},
 	}
 
 	if err := writeSpec(spec); err != nil {
 		le(err)
 	} else {
 
-		files := formdata.File["Assets"]
+		files := formdata.File["assets"]
 		for i, _ := range files {
 			file, err := files[i].Open()
 			defer file.Close()

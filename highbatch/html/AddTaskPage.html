@@ -13,6 +13,7 @@
                    {{if ne .Key ""}}key="key"{{end}}
                    {{if eq .Key ""}}disabled="disabled"{{end}}>
             <script>
+             {{if ne .Key ""}}
              $("#form_{{.Name}}").on("keyup", function() {
                  if ($("#form_{{.Name}}").val().length > 0) {
                      enableAll();
@@ -20,6 +21,7 @@
                      disableAll();
                  }
              });
+             {{end}}
             </script>
             {{end}}
             {{if eq .Elm "textarea"}}
@@ -27,8 +29,7 @@
                       rows="3"
                       disabled="disabled"
                       id="form_{{.Name}}"
-                      placeholder="{{.Desc}}">
-            </textarea>
+                      placeholder="{{.Desc}}"></textarea>
             {{end}}
             {{if eq .Elm "select"}}
             <select class="form-control"
@@ -53,10 +54,11 @@
             {{if eq .Elm "bool"}}
             <input type="checkbox"
                    disabled="disabled"
+                   data-type="bool"
                    id="form_{{.Name}}">
             <script>
              $("#form_{{.Name}}").parent()
-                        .css("paddhing-top", 7)
+                        .css("padding-top", 7)
                         .append(
                             $("<span>").text("{{.Desc}}")
                                        .css("padding-left", "3px")
@@ -64,7 +66,7 @@
             </script>
             {{end}}
             {{if eq .Elm "file"}}
-            <span id="form_{{.Name}}"></span>
+            <div id="form_{{.Name}}" data-type="file"></div>
             <script>
              $("#form_{{.Name}}").parent()
                         .attr("id", "file_form_{{.Name}}")

@@ -450,14 +450,13 @@ function disableAll() {
     });
 }
 
-function disableUpload(item) {
-    $("#file_form_"+name).html("");
+function disableUpload(name) {
+    $("#file_form_"+name).html("<div id=\"form_"+name+"\" data-type=\"file\"></div>");
 }
 
 function enableUpload(name) {
 
-    var drag = $("<div>")
-            .attr("id", "form_" + name);
+    var drag = $("#form_" + name);
     drag
         .addClass("drag")
         .append($("<p>")
@@ -484,7 +483,6 @@ function enableUpload(name) {
             $("#uploadBtn").click();
         })
         .appendTo(drag);
-    drag.appendTo($("#file_form_"+name));
     setTimeout(function(name) {
         setupDragDrop(name);
     }, 100, name);
@@ -536,16 +534,17 @@ function addFiles(files, name) {
 
 function postTask() {
     var btn =$("#addTaskButton").button("loading");
-    for (var i in items) {
-        var item = items[i];
-        var id = "#form_" + item.name;
-        if (item.type == 'file') { continue; }
-        var data = $("#form_" + item.name).val();
-        if (item.type == "bool") {
-            data = ($(id).prop('checked'))? "on": "off";
+
+    $("[id^='form']").each(function(index, elm) {
+        if ($(elm).data("type") != "file") {
+            var data = $(elm).val();
+            if ($(elm).data("type") == "bool") {
+                data = ($(elm).prop('checked'))? "on": "off";
+            }
+            var name = $(elm).attr("id").replace("form_", "").toLowerCase();
+            fd.append(name, data);
         }
-        fd.append(item.name, data);
-    }
+    });
 
     $.ajax({
         url: "/task",
