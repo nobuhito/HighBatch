@@ -36,3 +36,8 @@ dd {
     margin-top: 18px;
     margin-left: 20px;
 }
+
+pre.console, pre.hljs {
+    min-height: 100px;
+    max-height: 200px;
+}

@@ -93,6 +93,7 @@ function getTabPanel(d) {
                     }).done(function(data) {
                         var html = hljs.highlightAuto(data).value;
                         $(target).html("<pre class=\"hljs\">" + html + "</pre>");
+                        preResize();
                     });
                     $this.tab("show");
                     return false;
@@ -334,7 +335,9 @@ function render(d, cb) {
             .append(panelHeading)
             .append(panelCollapse)
             .appendTo($("#accordion"));
-    cb();
+    if (cb != undefined) {
+        cb();
+    }
 }
 
 function load(path, bothTree, cb) {
@@ -609,10 +612,26 @@ function jsonToTable(obj, isPrintNull) {
     return table;
 }
 
+
+function preResize() {
+    $("pre.console, pre.hljs").each(function(i, e) {
+        if (location.href.split("/")[3] == "id") {
+            $(e).css({
+                "max-height": ($(window).height() - 470 ) + "px",
+                "height": ($(window).height() - 470 ) + "px"
+            });
+        }
+    });
+};
+
 function permalinkPage(id) {
     $("#article-wrap").removeClass("col-sm-8").addClass("col-sm-12");
     $("#article-wrap").removeClass("col-sm-4");
     load("/id/data/"+id, false, function()  {
+        preResize();
+        $(window).resize(function() {
+            preResize();
+        });
         $(".accoudion-link").each(function(e) {
             $(this).click();
         });
