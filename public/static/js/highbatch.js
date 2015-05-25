@@ -94,8 +94,8 @@ function getTabPanel(d) {
                         var html = hljs.highlightAuto(data).value;
                         $(target).html("<pre class=\"hljs\">" + html + "</pre>");
                         preResize();
+                        $this.tab("show");
                     });
-                    $this.tab("show");
                     return false;
                 });
         var preesntation = $("<li>").append(a)
