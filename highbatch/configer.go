@@ -175,12 +175,14 @@ func watchTasks() {
 
 func doUnzip(path string) {
 	ld("in doUnzip")
-	if err := os.RemoveAll("tasks"); err != nil {
-		le(err)
-	}
 	reader, err := zip.OpenReader(path)
-	defer reader.Close()
 	if err != nil {
+		le(err)
+		return
+	}
+	defer reader.Close()
+
+	if err := os.RemoveAll("tasks"); err != nil {
 		le(err)
 	}
 
