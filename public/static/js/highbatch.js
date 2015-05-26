@@ -642,16 +642,27 @@ function permalinkPage(id) {
 function index() {
     load("/data", true);
 
-    ("#nav").parent().hover(
-        function() {
-            $("#nav-wrap").removeClass().addClass("col-sm-6");
-            $("#article-wrap").removeClass().addClass("col-sm-6");
-        },
-        function() {
-            $("#nav-wrap").removeClass().addClass("col-sm-4");
-            $("#article-wrap").removeClass().addClass("col-sm-8");
+    var resize = function() {
+        if ($("body").width() < 1000) {
+            $("#nav").parent().hover(
+                function() {
+                    $("#nav-wrap").removeClass().addClass("col-sm-6");
+                    $("#article-wrap").removeClass().addClass("col-sm-6");
+                },
+                function() {
+                    $("#nav-wrap").removeClass().addClass("col-sm-4");
+                    $("#article-wrap").removeClass().addClass("col-sm-8");
+                }
+            );
+        } else {
+            $("#nav").parent().unbind("mouseenter").unbind("mouseleave");
         }
-    );
+    };
+
+    resize();
+    $(window).resize(function() {
+        resize();
+    });
 
     $(function () {
         $('.panel-group').on('shown.bs.collapse', function (e) {
