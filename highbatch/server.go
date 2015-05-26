@@ -313,11 +313,11 @@ func execHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 		spec := specs[i]
 		if spec.Key == c.URLParams["key"] {
 			spec.Schedule = "Manual"
-			sendWorker(spec)
+			taskKick(spec)
 			break
 		}
 	}
-	http.Redirect(w, r, "/", 301)
+	http.Redirect(w, r, "/", 302)
 }
 
 func resolveHandler(c web.C, w http.ResponseWriter, r *http.Request) {
@@ -326,7 +326,7 @@ func resolveHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	if err := writeDB(spec); err != nil {
 		le(err)
 	}
-	http.Redirect(w, r, "/", 301)
+	http.Redirect(w, r, "/", 302)
 
 }
 
