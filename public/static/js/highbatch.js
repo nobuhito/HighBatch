@@ -281,12 +281,14 @@ function getTree(items, cb) {
             h.text = hostname;
             h.icon = icon;
             h.href = "#" + hostname;
+            h.state = {expanded: false},
             h.nodes = [];
             for (var key in items[hostname]) {
                 var k = {};
                 k.text = items[hostname][key]["name"];
                 k.icon = "glyphicon glyphicon-time";
                 k.href = "#" + hostname + "/" + key;
+                k.state = {expanded: false},
                 k.nodes = [];
                 var tag = 0;
                 for (var i in items[hostname][key]["error"]) {
