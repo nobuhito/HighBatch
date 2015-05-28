@@ -141,6 +141,9 @@ func executeCmd(path string, cmdSlice []string) (exitCode int, output string) {
 				err = nil
 				exitCode = status.ExitStatus()
 			}
+		} else {
+			ret = []byte(err.Error())
+			exitCode = 99
 		}
 	}
 
