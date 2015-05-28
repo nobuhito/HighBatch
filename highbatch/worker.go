@@ -37,11 +37,15 @@ func sendKeepalive() {
 			}
 			errorCount += 1
 		} else {
-			info, _ := os.Stat("tasks.zip")
-			downloadedDate := info.ModTime().Format("20060102150405")
-			uploadedDate := strings.Replace(re, "\"", "", 2)
-			if uploadedDate > downloadedDate {
+			info, err := os.Stat("tasks.zip")
+			if err != nil {
 				refleshTasks()
+			} else {
+				downloadedDate := info.ModTime().Format("20060102150405")
+				uploadedDate := strings.Replace(re, "\"", "", 2)
+				if uploadedDate > downloadedDate {
+					refleshTasks()
+				}
 			}
 			errorCount = 0
 		}

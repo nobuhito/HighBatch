@@ -178,6 +178,9 @@ func doUnzip(path string) {
 	reader, err := zip.OpenReader(path)
 	if err != nil {
 		le(err)
+		if err := os.Remove(path); err != nil {
+			le(err)
+		}
 		return
 	}
 	defer reader.Close()
