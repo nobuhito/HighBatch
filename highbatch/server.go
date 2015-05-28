@@ -51,6 +51,7 @@ func route(m *web.Mux) {
 	m.Get("/tasks", tasksHandler)
 	m.Get("/workers/data", workerListHandler)
 	m.Get("/workers", workersHandler)
+	m.Get("/graph", graphHandler)
 	m.Get("/source/:name/:file", sourceHandler)
 	m.Post("/webhook", webhookHnadler)
 	m.Get("/task",taskHandler)
@@ -84,6 +85,10 @@ func tasksHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 
 func workersHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, getHtml("WorkersPage", "workers()"))
+}
+
+func graphHandler(c web.C, w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, getHtml("GraphPage", "graph()"))
 }
 
 func taskHandler(c web.C, w http.ResponseWriter, r *http.Request) {

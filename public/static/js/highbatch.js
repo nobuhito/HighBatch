@@ -256,6 +256,9 @@ function progressBarUpdate(target) {
 }
 
 function dt2datetime(dt) {
+    if (dt == "" || dt == undefined) {
+        return undefined;
+    }
     var datetime = "";
     m = dt.match(/(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/);
     datetime = m[1] + "/" + m[2] + "/" + m[3] + " " + m[4] + ":" + m[5] + ":" + m[6];
@@ -557,6 +560,77 @@ function postTask() {
         contentType: false
     }).done(function(data) {
         btn.button("reset");
+    });
+}
+
+function graph() {
+    var tasks = [];
+    var taskNames = [];
+
+    var taskStatus = {
+        "SUCCEEDED": "bar",
+        "FAILED": "bar-failed"
+    };
+
+    $.ajax({
+        url: "/data"
+    }).done(function(data) {
+        for (var i in data) {
+            var d = data[i];
+            var start = dt2datetime(d.started);
+            var end = dt2datetime(d.completed);
+            if (start == undefined || end == undefined) {
+                continue;
+            }
+            var task = {
+                startDate: Date.parse(start),
+                endDate: Date.parse(end),
+                taskName: d.name,
+                desc: d.hostname,
+                status: (d.exitCode == 0)? "SUCCEEDED": "FAILED"
+            };
+            tasks.push(task);
+
+            if (taskNames.indexOf(d.name) < 0) {
+                taskNames.push(d.name);
+            }
+        }
+
+        taskNames.sort();
+
+        tasks.sort(function(a, b) {
+            return a.endDate - b.endDate;
+        });
+        tasks.sort(function(a, b) {
+            return a.startDate - b.startDate;
+        });
+
+        var offsetHour = 6; //hr
+
+        var format = "%H:%M";
+        switch (true) {
+        case (offsetHour > 24) :
+            format = "%m/%d %H:%M";
+            break;
+        case (offsetHour > 168):
+            format = "%m/%d";
+            break;
+        }
+
+        var gantt = d3.gantt();
+        var width = $("#main").width() - 30;
+        var height = (taskNames.length < 30)? $("body").height() - 70: undefined;
+        gantt
+            .taskTypes(taskNames)
+            .taskStatus(taskStatus)
+            .width(width)
+            .height(height)
+            .container("#main")
+            .tickFormat(format)
+            .timeDomain([d3.time.hour.offset(Date.now(), offsetHour * -1), Date.now()])
+            .timeDomainMode("fixed");
+
+        gantt(tasks);
     });
 }
 
