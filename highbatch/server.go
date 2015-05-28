@@ -31,6 +31,7 @@ var logger service.Logger
 var loglevel int // 1:info 2:error 3:warn
 
 func route(m *web.Mux) {
+	m.Get("/ka/:host/:port/:version", kaHandler)
 	m.Get("/ka/:host/:port", kaHandler)
 	m.Post("/worker", workerHandler)
 	m.Post("/logger", loggerHandler)
@@ -218,7 +219,7 @@ func dataHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 
 func kaHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 
-	v := WorkerInfo{c.URLParams["host"], c.URLParams["port"], time.Now(), 0}
+	v := WorkerInfo{c.URLParams["host"], c.URLParams["port"], c.URLParams["version"], time.Now(), 0}
 	values, err := json.Marshal(&v)
 	if err != nil {
 		le(err)

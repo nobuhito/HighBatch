@@ -75,6 +75,11 @@ func getMainPage() (html string) {
 
 func getHtml(page, js string) string {
 
+	type args struct {
+		Ver string
+	}
+
+	a := args{Ver: Version}
 	pageHtml := ""
 	switch page {
 	case "AddTaskPage":
@@ -85,7 +90,8 @@ func getHtml(page, js string) string {
 
 	base := new(bytes.Buffer)
 	baseTmpl := template.Must(template.ParseFiles("highbatch/html/Base.html"))
-	baseTmpl.Execute(base, nil)
+
+	baseTmpl.Execute(base, a)
 	s := base.String()
 	s = strings.Replace(s, "%%HTML%%", pageHtml, -1)
 	s = strings.Replace(s, "%%JS%%", js, -1)

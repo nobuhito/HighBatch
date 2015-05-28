@@ -41,3 +41,6 @@ pre.console, pre.hljs {
     min-height: 100px;
     max-height: 200px;
 }
+.version {
+    margin-left: 0px;
+}

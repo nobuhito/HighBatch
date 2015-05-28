@@ -66,6 +66,7 @@ type SmtpAuth struct {
 type WorkerInfo struct {
 	Host     string    `json:"host"`
 	Port     string    `json:"port"`
+	Version  string    `json:"version"`
 	Datetime time.Time `json:"dt"`
 	IsAlive  int       `json:"isAlive"`
 }

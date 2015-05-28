@@ -29,7 +29,7 @@ func sendKeepalive() {
 		time.Sleep(60 * time.Second)
 		m := Conf.Master
 		w := Conf.Worker
-		url := fmt.Sprintf("http://%s:%s/ka/%s/%s", m.Host, m.Port, w.Host, w.Port)
+		url := fmt.Sprintf("http://%s:%s/ka/%s/%s/%s", m.Host, m.Port, w.Host, w.Port, Version)
 		re, err := getData(url)
 		if err != nil {
 			if errorCount%10 == 0 { // エラーは10分に一回程度
