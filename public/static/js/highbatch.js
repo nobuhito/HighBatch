@@ -578,8 +578,8 @@ function graph() {
                 }
             })
             .on("slideStop", function() {
-                var gantt = $("#graph").data("gantt");
-                var tasks = $("#graph").data("tasks");
+                var gantt = $("#gantt").data("gantt");
+                var tasks = $("#gantt").data("tasks");
 
                 var val = this.value.split(",");
                 var from = d3.time.hour.offset(Date.now(), val[1] * -1);
@@ -623,7 +623,7 @@ function graph() {
                 startDate: Date.parse(start),
                 endDate: Date.parse(end),
                 taskName: d.name,
-                desc: d.hostname,
+                desc: ["host: " + d.hostname, start, " - " + end].join("\n"),
                 status: (d.exitCode == 0)? "SUCCEEDED": "FAILED"
             };
             tasks.push(task);
@@ -656,19 +656,19 @@ function graph() {
 
         var gantt = d3.gantt();
         var width = $("#main").width() - 30;
-        var height = (taskNames.length < 30)? $("body").height() - 70: undefined;
+        var height = (taskNames.length + 1) * 35;
         gantt
             .taskTypes(taskNames)
             .taskStatus(taskStatus)
             .width(width)
             .height(height)
-            .container("#graph")
+            .container("#gantt")
             .tickFormat(format)
             .timeDomain([d3.time.hour.offset(Date.now(), offsetHour * -1), Date.now()])
             .timeDomainMode("fixed");
 
-        $("#graph").data("gantt", gantt);
-        $("#graph").data("tasks", tasks);
+        $("#gantt").data("gantt", gantt);
+        $("#gantt").data("tasks", tasks);
         gantt(tasks);
     });
 }
