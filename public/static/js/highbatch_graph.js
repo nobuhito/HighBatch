@@ -1,85 +1,112 @@
 function graph() {
     renderGanttSlider();
     renderGanttChart();
-    renderRelationTree();
+
+    $("a[data-toggle=\"tab\"]").on("shown.bs.tab", function(e) {
+        if ($(e.target).attr("href") == "#relation") {
+            renderRelationTree(addNoRelationTasklist);
+        }
+    });
 }
 
-function findParent(tasks, key) {
-    var parent = [];
+function addNoRelationTasklist() {
+    var relationTask = [];
+    var nodes = $("#relation-data").data("nodes");
+    for (var i in nodes) {
+        relationTask.push(nodes[i].name);
+    }
+
+    var noRelationTask = [];
+    var tasks = $("#relation-data").data("tasks");
     for (var i in tasks) {
-        var task = tasks[i];
-        if (task.chain == null || task.chain.length == 0 || task.chain[0] == "") {
-            continue;
-        }
-        for (var j in task.chain) {
-            if (task.chain[j] == key) {
-                parent.push(task.name);
-            }
+        if (relationTask.indexOf(tasks[i].name) == -1) {
+            renderTaskMessage("「" + tasks[i].name + "」 が使用されていません。", "warning");
+            noRelationTask.push(tasks[i].name);
         }
     }
-    return (parent.length > 0)? parent: undefined;
 }
 
-function findChild(tasks, key) {
+function renderTaskMessage(message, level) {
+    $("#relation-alert").prepend(
+        $("<div>")
+            .addClass("alert alert-" + level)
+            .attr("role", "alert")
+            .text(message)
+            .prepend($("<span>").addClass("glyphicon glyphicon-question-sign"))
+    );
+}
+
+function findChild(tasks, key, parents) {
     for (var i in tasks) {
         if (tasks[i].name == key) {
             var task = tasks[i];
-            if (task.chain == null || task.chain.length == 0) {
-                return {name:task.name};
-                // return task;
-            } else if (task.chain[0] == "") {
-                return {name:task.name};
-                // return task;
+            if (parents.indexOf(task.name) != -1) {
+                renderTaskMessage("「" + tasks[i].name + "」 がループしています。", "danger");
+                return {name: "LOOP"};
             } else {
-                children = [];
-                for (var j in task.chain) {
-                    child = findChild(tasks, task.chain[j]);
-                    if (child != undefined) {
-                        children.push(child);
+                if (task.chain == null || task.chain.length == 0) {
+                    return {name:task.name};
+                } else if (task.chain[0] == "") {
+                    return {name:task.name};
+                } else {
+                    var children = [];
+                    for (var j in task.chain) {
+                        parents.push(task.name);
+                        var child = findChild(tasks, task.chain[j], parents);
+                        console.log(child);
+                        if (child != undefined) {
+                            children.push(child);
+                        }
                     }
+                    return {
+                        name:task.name,
+                        children: children
+                    };
                 }
-                return {
-                    name:task.name,
-                    children: children
-                };
-                // return task;
+                break;
             }
-            break;
         }
     }
     return undefined;
 }
 
-function renderRelationTree() {
+function renderRelationTree(cb) {
     $.ajax({
         url: "/tasks/data"
     }).done(function(tasks) {
         var data = {
-            name: "Tasks",
+            name: "Schedule起動",
             children: []
         };
         for (var i in tasks) {
             var task = tasks[i];
 
-            task.parent = findParent(tasks, task.name);
-
-            if (task.chain == null || task.chain.length == 0 || task.chain[0] == "") {
-                continue;
-            }
-            var children = [];
-            for (var j in task.chain) {
-                var c = findChild(tasks, task.chain[j]);
-                if (c != undefined) {
-                    children.push(c);
+            if (task.schedule != null && task.schedule != "") {
+                if (task.chain == null || task.chain.length == 0 || task.chain[0] == "") {
+                    data.children.push({
+                        name: task.name
+                    });
+                } else {
+                    var inLoop = false;
+                    var children = [];
+                    for (var j in task.chain) {
+                        var c = findChild(tasks, task.chain[j], [task.name]);
+                        if (c != undefined) {
+                            children.push(c);
+                        }
+                    }
+                    if (!inLoop) {
+                        data.children.push({
+                            name: task.name,
+                            children: children
+                        });
+                    }
                 }
             }
-            data.children.push({
-                name: task.name,
-                children: children
-            });
-            // task.child = child;
         }
-        createRelationTree("#relation", data);
+        $("#relation-data").data("tasks", tasks);
+        createRelationTree("#relation-data", data);
+        cb();
     });
 }
 
@@ -93,14 +120,22 @@ function createRelationTree(elm, data) {
 
     var tree = d3.layout.tree().size([w-10, h-10]);
 
+    var d = $.extend(true, {}, data);
     var nodes = tree.nodes(data);
-    var c = nodes.length;
+    var left = nodes[0].x;
     for (var i in nodes) {
         if (i != 0) {
-            nodes[i].y = nodes[i].y - (((c - i) * 10) % 9) * 15;
+            if (nodes[i].x < left) {
+                left = nodes[i].x;
+            }
+            nodes[i].y = nodes[i].y - ( i % 3) * 20;
         }
+        nodes[0].x = left;
+        nodes[0].y = 30;
     }
+    $(elm).data("nodes", nodes);
     var links = tree.links(nodes);
+    $(elm).data("links", links);
 
     var node = svg.selectAll(".node").data(nodes)
         .enter()
@@ -116,9 +151,11 @@ function createRelationTree(elm, data) {
 
     node.append("text")
         .text(function(d) { return d.name; })
-        .attr("x", 5)
+        .attr("x", function(d) {
+            return (d.name == "Schedule起動")? -40: 5;
+        })
         .attr("y", function(d) {
-            return (d.name == "Tasks")? 15: 5;
+            return (d.name == "Schedule起動")? -10: 5;
         });
 
     var diagonal = d3.svg.diagonal().projection(function(d) {
@@ -198,21 +235,21 @@ function renderGanttChart() {
             .taskStatus(taskStatus)
             .width(width)
             .height(height)
-            .container("#gantt")
+            .container("#history-data")
             .tickFormat(format)
             .timeDomain([d3.time.hour.offset(Date.now(), offsetHour * -1), Date.now()])
             .timeDomainMode("fixed");
 
-        $("#gantt").data("gantt", gantt);
-        $("#gantt").data("tasks", tasks);
+        $("#history-data").data("gantt", gantt);
+        $("#history-data").data("tasks", tasks);
         gantt(tasks);
     });
 
 }
 
 function renderGanttSlider() {
-    $("#graphRange").show();
-    var slider = $("#graphRange")
+    $("#history-graphRange").show();
+    var slider = $("#history-graphRange")
             .css("width", "100%")
             .slider({
                 id: "range",
@@ -226,8 +263,8 @@ function renderGanttSlider() {
                 }
             })
             .on("slideStop", function() {
-                var gantt = $("#gantt").data("gantt");
-                var tasks = $("#gantt").data("tasks");
+                var gantt = $("#history-data").data("gantt");
+                var tasks = $("#history-data").data("tasks");
 
                 var val = this.value.split(",");
                 var from = d3.time.hour.offset(Date.now(), val[1] * -1);

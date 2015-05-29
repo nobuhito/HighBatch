@@ -2,12 +2,32 @@
 <script src="/js/gantt-chart-d3.js"></script>
 <script src="/js/bootstrap-slider.js"></script>
 <script src="/js/highbatch_graph.js"></script>
-<div>
-    <div id="option">
-        <input id="graphRange" type="text" style="display:none"/>
+
+<div role="tabpanel">
+    <ul class="nav nav-tabs" role="tablist">
+        <li role="presentation" class="active">
+            <a href="#history" aria-controls="history" role="tab" data-toggle="tab" >
+                History
+            </a>
+        </li>
+        <li role="presentation">
+            <a href="#relation" aria-controls="relation" role="tab" data-toggle="tab">
+                Relation
+            </a>
+        </li>
+    </ul>
+    <div class="tab-content">
+        <div role="tabpanel" class="tab-pane active" id="history">
+            <div id="option" class="panel-body">
+                <input id="history-graphRange" type="text" style="display:none"/>
+            </div>
+            <div id="history-data"></div>
+        </div>
+        <div role="tabpanel" class="tab-pane" id="relation">
+            <div id="relation-alert" class="panel-body"></div>
+            <div id="relation-data"></div>
+        </div>
     </div>
-    <div id="gantt"></div>
-</div>
+
 <div>
-    <div id="relation"></div>
 </div>
