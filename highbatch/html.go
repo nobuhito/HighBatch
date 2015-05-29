@@ -73,6 +73,13 @@ func getMainPage() (html string) {
 	return b.String()
 }
 
+func getGraphPage() (html string) {
+	b := new(bytes.Buffer)
+	tmpl := template.Must(template.ParseFiles("highbatch/html/GraphPage.html"))
+	tmpl.Execute(b, nil)
+	return b.String()
+}
+
 func getHtml(page, js string) string {
 
 	type args struct {
@@ -86,6 +93,8 @@ func getHtml(page, js string) string {
 		pageHtml = getAddTaskPage()
 	case "MainPage":
 		pageHtml = getMainPage()
+	case "GraphPage":
+		pageHtml = getGraphPage()
 	}
 
 	base := new(bytes.Buffer)

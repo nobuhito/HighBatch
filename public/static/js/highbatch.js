@@ -564,6 +564,43 @@ function postTask() {
 }
 
 function graph() {
+
+    $("#graphRange").show();
+    var slider = $("#graphRange")
+            .css("width", "100%")
+            .slider({
+            id: "range",
+            range: true,
+            value: [0, 6],
+            ticks: [0, 6, 12, 24, 72, 168],
+                formatter: function(value) {
+                    return "過去 " + value[0] + "h - " +value[1] + "h の範囲を表示";
+                }
+            })
+            .on("slideStop", function() {
+                var gantt = $("#graph").data("gantt");
+                var tasks = $("#graph").data("tasks");
+
+                var val = this.value.split(",");
+                var from = d3.time.hour.offset(Date.now(), val[1] * -1);
+                var to = d3.time.hour.offset(Date.now(), val[0] * -1);
+
+                var format = "%H:%M";
+                switch (true) {
+                case (val[1] - val[0] > 24) :
+                    format = "%m/%d %H:%M";
+                    break;
+                case (val[1] - val[0] > 168):
+                    format = "%m/%d";
+                    break;
+                }
+
+                gantt
+                    .timeDomain([from, to])
+                    .tickFormat(format)
+                    .redraw(tasks);
+            });
+
     var tasks = [];
     var taskNames = [];
 
@@ -625,13 +662,19 @@ function graph() {
             .taskStatus(taskStatus)
             .width(width)
             .height(height)
-            .container("#main")
+            .container("#graph")
             .tickFormat(format)
             .timeDomain([d3.time.hour.offset(Date.now(), offsetHour * -1), Date.now()])
             .timeDomainMode("fixed");
 
+        $("#graph").data("gantt", gantt);
+        $("#graph").data("tasks", tasks);
         gantt(tasks);
     });
+}
+
+function ganttRedraw() {
+
 }
 
 function tasks() {
