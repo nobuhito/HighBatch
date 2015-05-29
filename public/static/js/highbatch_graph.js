@@ -120,19 +120,29 @@ function createRelationTree(elm, data) {
 
     var tree = d3.layout.tree().size([w-10, h-10]);
 
-    var d = $.extend(true, {}, data);
     var nodes = tree.nodes(data);
+    nodes[0].y = 0;
+    nodes[0].x = 0;
+    nodes.sort(function(a, b) {
+        if (a.y < b.y) return -1;
+        if (a.y > b.y) return  1;
+        if (a.x < b.x) return -1;
+        if (a.x > b.x) return  1;
+        return 1;
+        // return (b.y + b.x > a.y + a.x)? -1: 1;
+    });
+    var span = h / nodes.length;
     var left = nodes[0].x;
     for (var i in nodes) {
         if (i != 0) {
             if (nodes[i].x < left) {
                 left = nodes[i].x;
             }
-            nodes[i].y = nodes[i].y - ( i % 3) * 20;
+            nodes[i].y = span * i;
         }
-        nodes[0].x = left;
-        nodes[0].y = 30;
     }
+    nodes[0].x = 50;
+    nodes[0].y = 30;
     $(elm).data("nodes", nodes);
     var links = tree.links(nodes);
     $(elm).data("links", links);
