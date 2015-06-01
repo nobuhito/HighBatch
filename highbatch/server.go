@@ -13,6 +13,7 @@ import (
 	"github.com/zenazn/goji"
 	"github.com/zenazn/goji/web"
 	"github.com/zenazn/goji/web/middleware"
+	"github.com/doloopwhile/logrusltsv"
 	"io/ioutil"
 	"math/rand"
 	"net/http"
@@ -26,7 +27,8 @@ import (
 
 type program struct{}
 
-var logger service.Logger
+var errorLogger service.Logger
+var logger = logrus.New()
 
 var loglevel int // 1:info 2:error 3:warn
 
@@ -156,18 +158,16 @@ func startWebserver() {
 			lw("can't create log directory")
 		}
 	}
-	f, err := os.OpenFile("log/goji.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	f, err := os.OpenFile("log/access.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		le(err)
 		lw("can't create log file")
 	}
+	accesslog := logrus.New()
+	accesslog.Formatter = new(logrusltsv.Formatter)
+	accesslog.Out = f
 
-	logger := logrus.Logger{
-		Formatter: &logrus.TextFormatter{DisableColors: true},
-		Out:       f,
-	}
-
-	goji.Use(glogrus.NewGlogrus(&logger, "HighBatch"))
+	goji.Use(glogrus.NewGlogrus(accesslog, "HighBatch"))
 	goji.Abandon(middleware.Logger)
 
 	flag.Set("bind", ":" + Conf.Worker.Port)
@@ -382,7 +382,7 @@ func (p *program) Start(s service.Service) error {
 
 func (p *program) run() {
 
-	logger.Info("start HighBatch")
+	errorLogger.Info("start HighBatch")
 
 	// 設定ファイルの読み込み
 	loadConfig()
@@ -418,7 +418,7 @@ func (p *program) run() {
 }
 
 func (p *program) Stop(s service.Service) error {
-	logger.Info("HighBatch service stop.")
+	errorLogger.Info("HighBatch service stop.")
 	return nil
 }
 
@@ -436,7 +436,7 @@ func ServiceInit() {
 		return
 	}
 
-	logger, err = s.Logger(nil)
+	errorLogger, err = s.Logger(nil)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -449,7 +449,7 @@ func ServiceInit() {
 	err = s.Run()
 	if err != nil {
 		fmt.Println(err)
-		logger.Error(err)
+		errorLogger.Error(err)
 	}
 
 }
@@ -476,7 +476,7 @@ func serviceRegist(s service.Service) {
 func logInit(l int) {
 	loglevel = l
 	if l == 0 {
-		loglevel = 3
+		loglevel = 2
 	}
 	if os.Getenv("HighBatchLogLevel") != "" {
 		envLogLevel, err := strconv.Atoi(os.Getenv("HighBatchLogLevel"))
@@ -486,28 +486,55 @@ func logInit(l int) {
 			loglevel = envLogLevel
 		}
 	}
+
+	switch loglevel {
+	case 3:
+		logger.Level = logrus.ErrorLevel
+	case 2:
+		logger.Level = logrus.WarnLevel
+	case 1:
+		logger.Level = logrus.DebugLevel
+	}
+
+	if _, err := os.Stat("log"); err != nil {
+		if err := os.Mkdir("log", 0666); err != nil {
+			le(err)
+			lw("can't create log directory")
+		}
+	}
+
+	f, err := os.OpenFile("log/higibatch.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		fmt.Println(err)
+		fmt.Println("can't create log file")
+	}
+
+	logger.Formatter = new(logrusltsv.Formatter)
+	logger.Out = f
+
 }
 
-func ld(msg string) {
+func ld(msg string) {						// debug
+	if loglevel < 2 {
+		logger.Debug(msg)
+	}
+}
+
+func li(msg string) {						// info
 	if loglevel < 2 {
 		logger.Info(msg)
 	}
 }
 
-func li(msg string) {
-	if loglevel < 2 {
-		logger.Info(msg)
-	}
-}
-
-func lw(msg string) {
+func lw(msg string) {						// warn
 	if loglevel < 3 {
-		logger.Warning(msg)
+		logger.Warn(msg)
 	}
 }
 
 func le(err error) {
-	logger.Error(err)
+	errorLogger.Error(err)
+	logger.Error(err.Error())
 }
 
 func getData(url string) (string, error) {
