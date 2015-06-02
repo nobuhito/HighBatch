@@ -7,9 +7,217 @@ function graph() {
             renderRelationTree(addNoRelationTasklist);
         }
     });
+
+    $("a[data-toggle=\"tab\"]").on("shown.bs.tab", function(e) {
+        if ($(e.target).attr("href") == "#execTime") {
+            renderExecTime();
+        }
+    });
+}
+
+function renderExecTime() {
+    $.ajax({
+        url: "/data"
+    }).done(function(data) {
+        var a = {};
+        for (var i in data) {
+            var d = data[i];
+            if (!a[d.hostname]) { a[d.hostname] = {}; }
+            if (!a[d.hostname][d.name]) {a[d.hostname][d.name] = []; }
+            a[d.hostname][d.name].push(Math.ceil(d.durationInt/1000000000));
+        }
+
+        var d = [];
+        for (var hostname in a) {
+            for (var name in a[hostname]) {
+                var vals = a[hostname][name];
+                var item = {
+                    hostname: hostname,
+                    name: name,
+                    data: medianArray(vals, 10),
+                    info: [
+                        { key: "mean",   val: s2str(d3.mean(vals)) },
+                        { key: "median", val: s2str(d3.median(vals)) },
+                        { key: "max",    val: s2str(d3.max(vals)) },
+                        { key: "min",    val: s2str(d3.min(vals)) }
+                    ]
+                };
+                d.push(item);
+            }
+        }
+        createExecTimeTable("#execTime-data", d);
+    });
+}
+
+function s2str(second) {
+    switch (true) {
+    case (second > 60 * 60):
+        var h = second / 360;
+        var m = Math.round((second % 360) / 60);
+        return h + "h " + m + "m";
+        break;
+    case (second > 60):
+        var m = Math.round(second / 60);
+        return m + "m";
+        break;
+    default:
+        return Math.round(second) + "s";
+    }
+}
+
+function createExecTimeTable(elm, data) {
+    d3.select(elm).text("");
+
+    var w = $(elm).width();
+    var h = ($(elm).height() == 0)? 500: $(elm).height();
+    var svg = d3.select(elm).append("svg")
+            .attr("width", w)
+            .attr("height", h)
+            .attr("transform", "translate(10, 10)");
+
+    var header = svg.selectAll(".header")
+            .data([
+                { key: "Host", x: 0 },
+                { key: "Task", x: 200 },
+                { key: "ExecTime(<-New)", x: 500,anchor: "middle" },
+                { key: "Mean", x: 700, anchor: "end" },
+                { key: "Median", x: 770, anchor: "end" },
+                { key: "Max", x: 840, anchor: "end" },
+                { key: "Min", x: 910, anchor: "end" }
+            ])
+            .enter()
+            .append("g")
+            .attr("class", "header")
+            .attr("transform", function(d, i) {
+                return "translate(20, 30)";
+            });
+
+    header.append("text")
+        .text(function(d) {
+            return d.key;
+        })
+        .attr("text-anchor", function(d) {
+            return d.anchor || "start";
+        })
+        .attr("y", 0)
+        .attr("x", function(d) {
+            return d.x;
+        });
+
+    var row = svg.selectAll(".row").data(data)
+            .enter()
+            .append("g")
+            .attr("class", "row")
+            .attr("transform", function(d, i) {
+                return "translate(20, " + ((i * 30) + 70) + ")";
+            });
+
+    row.selectAll(".val")
+        .data(function(d) {
+            var m = d3.median(d.data);
+            var val = [];
+            d.data.forEach(function(v, k) {
+                val.push({
+                    key: k,
+                    value: ((v == 0 && m == 0)? 1: (v == 0)? 0: (v / m) * 10),
+                    scale: ((v == 0 && m == 0)? 1: (v == 0)? 0: (v / m))
+                });
+            });
+            return val;
+        })
+        .enter()
+        .append("circle")
+        .attr("cx", function(d, i) {
+            return (i * 30 + 380);
+        })
+        .attr("cy", -5)
+        .attr("r", function(d) {
+            return (d.value != "NaN")? d.value: 0;
+        })
+        .attr("opacity", "0.9")
+        .attr("fill", function(d) {
+            switch (true) {
+            case (d.scale > 1.5):
+                return "#D9534F";
+                break;
+            case (d.scale < 0.5):
+                return "#EC971F";
+                break;
+            default:
+                return "#337AB7";
+                break;
+            }
+        });
+
+    row.append("text")
+        .text(function(d, i) {
+            return (i != 0 && data[i - 1].hostname == d.hostname)? "": d.hostname;
+        })
+        .attr("x", 0);
+
+    row.append("text")
+        .text(function(d) {
+            return d.name;
+        })
+        .attr("text-anchor", "end")
+        .attr("x", 350);
+
+    row.selectAll(".info")
+        .data(function(d) {
+            return d.info;
+        })
+        .enter()
+        .append("text")
+        .text(function(d) {
+            return d.val;
+        })
+        .attr("text-anchor", "end")
+        .attr("x", function(d, i) {
+            return 700 + (i *70);
+        });
+
+    var carray = [[0, 40], [1000, 40]];
+    var line = d3.svg.line()
+        .x(function(d) { return d[0];})
+        .y(function(d) { return d[1];});
+    svg.append("path")
+        .attr("d", line(carray))
+        .attr("class", "headerline")
+        .attr("stroke", "black")
+        .attr("stroke-width", "1");
+
+}
+
+function medianArray(array, count) {
+    if (array.length <= count) { return array; }
+
+    var odd = array.length % count;
+    var div = Math.floor(array.length / count);
+
+    var col = 0;
+    var colInCount = 1;
+
+    var data = [];
+    for (var i=0; i<array.length; i++) {
+        if (!data[col]) { data[col] = []; }
+        data[col].push(array[i]);
+        if (colInCount < div + ((col < odd)? 1: 0)) {
+            colInCount++;
+        } else {
+            col++;
+            colInCount = 1;
+        }
+    }
+
+    data.forEach(function(d, i) {
+        data[i] = d3.median(d);
+    });
+
+    return data;
 }
 
 function addNoRelationTasklist() {
+    d3.selectAll("#relation-alert").text("");
     var relationTask = [];
     var nodes = $("#relation-data").data("nodes");
     for (var i in nodes) {
@@ -53,7 +261,6 @@ function findChild(tasks, key, parents) {
                     for (var j in task.chain) {
                         parents.push(task.name);
                         var child = findChild(tasks, task.chain[j], parents);
-                        console.log(child);
                         if (child != undefined) {
                             children.push(child);
                         }
@@ -111,6 +318,7 @@ function renderRelationTree(cb) {
 }
 
 function createRelationTree(elm, data) {
+    d3.select(elm).text("");
     var w = $(elm).width();
     var h = ($(elm).height() == 0)? 500: $(elm).height();
     var svg = d3.select(elm).append("svg")

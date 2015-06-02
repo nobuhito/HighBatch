@@ -44,3 +44,11 @@ pre.console, pre.hljs {
 .version {
     margin-left: 0px;
 }
+svg> g.header {
+    font-weight: 110%;
+    font-size: 110%;
+}
+
+svg > .headerline {
+    shape-rendering: crispEdges;
+}
