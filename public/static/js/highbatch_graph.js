@@ -52,16 +52,16 @@ function renderExecTime() {
 function s2str(second) {
     switch (true) {
     case (second > 60 * 60):
-        var h = second / 360;
-        var m = Math.round((second % 360) / 60);
+        var h = Math.floor(second / 3600);
+        var m = Math.floor((second % 3600) / 60);
         return h + "h " + m + "m";
         break;
     case (second > 60):
-        var m = Math.round(second / 60);
+        var m = Math.floor(second / 60);
         return m + "m";
         break;
     default:
-        return Math.round(second) + "s";
+        return Math.floor(second) + "s";
     }
 }
 
