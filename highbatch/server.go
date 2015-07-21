@@ -442,8 +442,10 @@ func ServiceInit() {
 	}
 
 	if len(os.Args) > 1 {
-		serviceRegist(s)
-		return
+		ret := serviceRegist(s)
+		if ret != 2 {
+			return
+		}
 	}
 
 	err = s.Run()
@@ -454,23 +456,25 @@ func ServiceInit() {
 
 }
 
-func serviceRegist(s service.Service) {
+func serviceRegist(s service.Service) int { // 0:regist Ok, 1:regist faild, 2:not regist
 	verb := os.Args[1]
 	switch verb {
 	case "install":
 		err := s.Install()
 		if err != nil {
 			fmt.Printf("Failed to install %s\n", err)
-			return
+			return 1
 		}
+		return 0
 	case "uninstall":
 		err := s.Uninstall()
 		if err != nil {
 			fmt.Printf("Faild to uninstall %s\n", err)
-			return
+			return 0
 		}
+		return 1
 	}
-	return
+	return 2
 }
 
 func logInit(l int) {
