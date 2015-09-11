@@ -222,6 +222,7 @@ func store(bucketname, key string, value []byte) error {
 	db, err := bolt.Open(dbname, 0600, nil)
 	if err != nil {
 		le(err)
+		return err
 	}
 	defer db.Close()
 
@@ -240,7 +241,7 @@ func store(bucketname, key string, value []byte) error {
 
 func get(bucketname, key string) (ret string) {
 	ld("in get")
-	db, err := bolt.Open(dbname, 0600, nil)
+	db, err := bolt.Open(dbname, 0600, &bolt.Options{ReadOnly: true})
 	if err != nil {
 		le(err)
 	}
@@ -273,7 +274,7 @@ func getSpec(bucketname, key string) Spec {
 
 func getWorkerList() (w WorkersInfo) {
 	ld("in get worker list")
-	db, err := bolt.Open(dbname, 0600, nil)
+	db, err := bolt.Open(dbname, 0600, &bolt.Options{ReadOnly: true})
 	if err != nil {
 		le(err)
 	}
@@ -300,7 +301,7 @@ func getWorkerList() (w WorkersInfo) {
 func getSpecList(bucketname string, f filter) workerOuts {
 	ld("in GetSpecLists")
 	var wos workerOuts
-	db, err := bolt.Open(dbname, 0600, nil)
+	db, err := bolt.Open(dbname, 0600, &bolt.Options{ReadOnly: true})
 	if err != nil {
 		le(err)
 	}
@@ -312,7 +313,7 @@ func getSpecList(bucketname string, f filter) workerOuts {
 		le(err)
 	}
 
-	span := 30 // 初期値は30日分
+	span := 14 // 初期値は30日分
 	since := time.Now().AddDate(0, 0, span*-1).Format("20060102150405")
 
 	db.View(func(tx *bolt.Tx) error {
@@ -361,7 +362,7 @@ func filterCheck(f filter, wo Spec) (isMatch bool) {
 
 func dump(bucketname string, num int) (kvs KeyValues) {
 	ld("in Dump")
-	db, err := bolt.Open(dbname, 0600, nil)
+	db, err := bolt.Open(dbname, 0600, &bolt.Options{ReadOnly: true})
 	if err != nil {
 		le(err)
 	}

@@ -1,2 +1,2 @@
 package highbatch
-const Version = "ver.0.9-25"
+const Version = "ver.0.9-28"
