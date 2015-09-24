@@ -194,13 +194,9 @@ func (w workerOuts) Less(i, j int) bool {
 }
 
 const dbname = "HighBatch.db"
+var db, _ = bolt.Open(dbname, 0600, nil)
 
 func initdb() {
-	db, err := bolt.Open(dbname, 0600, nil)
-	if err != nil {
-		le(err)
-	}
-	defer db.Close()
 
 	if err := db.Update(func(tx *bolt.Tx) error {
 		_, err := tx.CreateBucketIfNotExists([]byte("workers")) // Workerリスト
@@ -219,12 +215,6 @@ func initdb() {
 
 func store(bucketname, key string, value []byte) error {
 	ld("in Store")
-	db, err := bolt.Open(dbname, 0600, nil)
-	if err != nil {
-		le(err)
-		return err
-	}
-	defer db.Close()
 
 	if err := db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(bucketname))
@@ -241,11 +231,6 @@ func store(bucketname, key string, value []byte) error {
 
 func get(bucketname, key string) (ret string) {
 	ld("in get")
-	db, err := bolt.Open(dbname, 0600, &bolt.Options{ReadOnly: true})
-	if err != nil {
-		le(err)
-	}
-	defer db.Close()
 
 	if err := db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(bucketname))
@@ -274,11 +259,6 @@ func getSpec(bucketname, key string) Spec {
 
 func getWorkerList() (w WorkersInfo) {
 	ld("in get worker list")
-	db, err := bolt.Open(dbname, 0600, &bolt.Options{ReadOnly: true})
-	if err != nil {
-		le(err)
-	}
-	defer db.Close()
 
 	db.View(func(tx *bolt.Tx) error {
 		c := tx.Bucket([]byte("workers")).Cursor()
@@ -301,11 +281,6 @@ func getWorkerList() (w WorkersInfo) {
 func getSpecList(bucketname string, f filter) workerOuts {
 	ld("in GetSpecLists")
 	var wos workerOuts
-	db, err := bolt.Open(dbname, 0600, &bolt.Options{ReadOnly: true})
-	if err != nil {
-		le(err)
-	}
-	defer db.Close()
 
 	reg := "^\\d{4}\\d{2}\\d{2}\\d{2}\\d{2}\\d{2}$"
 	isMatch, err := regexp.MatchString(reg, f.start)
@@ -362,11 +337,6 @@ func filterCheck(f filter, wo Spec) (isMatch bool) {
 
 func dump(bucketname string, num int) (kvs KeyValues) {
 	ld("in Dump")
-	db, err := bolt.Open(dbname, 0600, &bolt.Options{ReadOnly: true})
-	if err != nil {
-		le(err)
-	}
-	defer db.Close()
 
 	db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(bucketname))
