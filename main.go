@@ -21,11 +21,11 @@ func main() {
 
 	dir, _ := filepath.Split(fullexecpath)
 
-	cleanTask()
-
 	if err := os.Chdir(dir); err != nil {
 		fmt.Println(err)
 	}
+
+	cleanTask()
 
 	if bootCheck() && cmdCheck(fullexecpath) {
 		highbatch.ServiceInit()
