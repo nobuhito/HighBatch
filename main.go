@@ -21,6 +21,8 @@ func main() {
 
 	dir, _ := filepath.Split(fullexecpath)
 
+	cleanTask()
+
 	if err := os.Chdir(dir); err != nil {
 		fmt.Println(err)
 	}
@@ -29,6 +31,17 @@ func main() {
 		highbatch.ServiceInit()
 	}
 
+}
+
+func cleanTask() {
+	tasks := []string{"tasks.zip", "public/static/file/tasks.zip"}
+	for _, x := range tasks {
+		if _, err := os.Stat(x); err == nil {
+			if err := os.Remove(x); err != nil {
+				fmt.Println(err)
+			}
+		}
+	}
 }
 
 func cmdCheck(path string) bool {
