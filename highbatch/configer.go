@@ -49,6 +49,12 @@ type WorkerConfig struct {
 type NotifyConfig struct {
 	SmtpAuth SmtpAuth
 	MailInfo MailInfo
+	WebhookInfo WebhookInfo
+}
+
+type WebhookInfo struct {
+	Url string
+	Room string
 }
 
 type MailInfo struct {

@@ -288,7 +288,7 @@ func getSpecList(bucketname string, f filter) workerOuts {
 		le(err)
 	}
 
-	span := 14 // 初期値は30日分
+	span := 14 // 初期値は14日分
 	since := time.Now().AddDate(0, 0, span*-1).Format("20060102150405")
 
 	db.View(func(tx *bolt.Tx) error {

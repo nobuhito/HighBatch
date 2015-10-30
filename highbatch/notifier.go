@@ -6,6 +6,8 @@ import (
 	"github.com/kr/pretty"
 	"net/smtp"
 	"strings"
+	"net/http"
+	"encoding/json"
 )
 
 // http://qiita.com/yamasaki-masahide/items/a9f8b43eeeaddbfb6b44
@@ -94,8 +96,20 @@ func sendSmtp(n NotifyConfig, subject, body string) error {
 	return nil
 }
 
+func webhook (n NotifyConfig, spec Spec) {
+	json, err := json.Marshal(spec)
+	if err != nil {
+		le(err)
+	}
+	_, err = http.Post(n.WebhookInfo.Url + "?room=" + n.WebhookInfo.Room, "application/json", bytes.NewBuffer(json))
+	if err != nil {
+		le(err)
+	}
+}
+
 func notify(spec Spec) {
 	n := Conf.Notify
+	webhook(n, spec)
 
 	if n.MailInfo.FromAddress != "" && len(n.MailInfo.ToAddress) > 0 {
 		subject := "[HighBatch] Notify " + spec.Hostname + " / " + spec.Name
