@@ -288,8 +288,14 @@ func getSpecList(bucketname string, f filter) workerOuts {
 		le(err)
 	}
 
-	span := 14 // 初期値は14日分
+	span := 14 // 初期値は30日分
 	since := time.Now().AddDate(0, 0, span*-1).Format("20060102150405")
+
+	span2 := 30
+	since2 := time.Now().AddDate(0, 0, span2*-1).Format("20060102150405")
+
+	span3 := 365
+	since3 := time.Now().AddDate(0, 0, span3*-1).Format("20060102150405")
 
 	db.View(func(tx *bolt.Tx) error {
 		c := tx.Bucket([]byte(bucketname)).Cursor()
@@ -299,7 +305,15 @@ func getSpecList(bucketname string, f filter) workerOuts {
 				le(err)
 			}
 
-			if f.start == "" && wo.Started[0:14] < since {
+			if f.machine == "" && f.task == "" && f.start == "" && wo.Started[0:14] < since {
+				break
+			}
+
+			if (f.machine != "" && f.task == "") && wo.Started[0:14] < since2 {
+				break
+			}
+
+			if (f.machine != "" && f.task != "") && wo.Started[0:14] < since3{
 				break
 			}
 
