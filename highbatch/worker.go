@@ -131,6 +131,9 @@ func executeCmd(path string, cmdSlice []string) (exitCode int, output string) {
 	}
 
 	cmd := exec.Command(shell, cmdSlice...)
+	if runtime.GOOS == "linux" {
+		cmd.Env = os.Environ();
+	}
 	cmd.Dir = strings.Join([]string{"tasks", path}, string(os.PathSeparator))
 
 	ret, err := cmd.CombinedOutput()
