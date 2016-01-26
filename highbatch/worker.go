@@ -126,8 +126,8 @@ func executeCmd(path string, cmdSlice []string) (exitCode int, output string) {
 		winbatchSlice := []string{"/c", "call"}
 		cmdSlice = append(winbatchSlice, cmdSlice...)
 	} else {
-		shell = "/bin/bash"
-		cmdSlice = append([]string{"-xe"}, cmdSlice...)
+		shell = "/bin/sh"
+		cmdSlice = append([]string{"-xec"}, cmdSlice...)
 	}
 
 	cmd := exec.Command(shell, cmdSlice...)
