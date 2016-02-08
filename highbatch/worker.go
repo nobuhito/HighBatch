@@ -127,7 +127,6 @@ func executeCmd(path string, cmdSlice []string) (exitCode int, output string) {
 		cmdSlice = append(winbatchSlice, cmdSlice...)
 	} else {
 		shell = cmdSlice[0]
-		// cmdSlice = []string{"'" + strings.Join(cmdSlice, " ") + "'"}
 		cmdSlice = cmdSlice[1:]
 	}
 

@@ -351,6 +351,10 @@ func readAssets(task string) (asset string, err error) {
 
 func findAssets(task string) (assets []string) {
 	ld("in findAssets")
+	_, err := os.Stat(task)
+	if err != nil {
+		return assets
+	}
 	if err := filepath.Walk(task,
 		func(path string, info os.FileInfo, err error) error {
 			isMatch, err := regexp.MatchString("\\.toml$", path)
